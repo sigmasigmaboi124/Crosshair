@@ -34,6 +34,7 @@ jobs:
         run: npm ci
 
       - name: Configure Version & Release Channel
+        id: ver
         shell: pwsh
         run: |
           $pkgPath = "package.json"
@@ -43,19 +44,52 @@ jobs:
             $tagVer = $env:GITHUB_REF_NAME -replace '^v', ''
             $pkg.version = $tagVer
             $pkg.build.publish.releaseType = "release"
-            Write-Host "Publishing STABLE GitHub Release v$tagVer"
+            echo "version=$tagVer" >> $env:GITHUB_OUTPUT
+            echo "tag=v$tagVer" >> $env:GITHUB_OUTPUT
+            echo "prerelease=false" >> $env:GITHUB_OUTPUT
+            Write-Host "Building STABLE GitHub Release v$tagVer"
           } else {
             $commitVer = "$baseVer-commit.$($env:GITHUB_RUN_NUMBER)"
             $pkg.version = $commitVer
             $pkg.build.publish.releaseType = "prerelease"
-            Write-Host "Publishing COMMIT Auto-Update Pre-Release v$commitVer"
+            echo "version=$commitVer" >> $env:GITHUB_OUTPUT
+            echo "tag=v$commitVer" >> $env:GITHUB_OUTPUT
+            echo "prerelease=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Building COMMIT Auto-Update Pre-Release v$commitVer"
           }
           $pkg | ConvertTo-Json -Depth 12 | Set-Content $pkgPath -Encoding UTF8
 
       - name: Build Self-Contained WinBridge, Electron & Studio UI
         run: npm run build:prod
 
-      - name: Package & Publish Windows Installer + Portable + Auto-Update Manifest
+      - name: Package Windows Installer, Portable EXE & Auto-Update Manifest
+        run: npx electron-builder --win --publish never
+
+      - name: Publish Release Assets via GitHub CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --publish always
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.ver.outputs.tag }}"
+          $isPre = "${{ steps.ver.outputs.prerelease }}" -eq "true"
+          $shortSha = $env:GITHUB_SHA.Substring(0, 7)
+
+          $files = @()
+          $files += Get-ChildItem "release\ZeroPoint-Setup-*.exe" | ForEach-Object { $_.FullName }
+          $files += Get-ChildItem "release\ZeroPoint-Setup-*.exe.blockmap" | ForEach-Object { $_.FullName }
+          $files += Get-ChildItem "release\ZeroPoint-Portable-*.exe" | ForEach-Object { $_.FullName }
+          if (Test-Path "release\latest.yml") { $files += (Resolve-Path "release\latest.yml").Path }
+
+          Write-Host "Uploading $($files.Count) assets to release $tag :"
+          $files | ForEach-Object { Write-Host "  - $_" }
+
+          # Remove any partial release with the same tag before creating cleanly
+          gh release delete $tag --yes 2>$null
+
+          $notes = "Automated ZeroPoint Windows build ($tag from commit ``$shortSha``).`n`n### Quick Install (PowerShell)`n``````powershell`nirm https://raw.githubusercontent.com/sigmasigmaboi124/Crosshair/main/install.ps1 | iex`n``````"
+          $ghArgs = @("release", "create", $tag, "--title", "ZeroPoint $tag", "--notes", $notes)
+          if ($isPre) { $ghArgs += "--prerelease" }
+          $ghArgs += $files
+
+          & gh @ghArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
