@@ -1,0 +1,112 @@
+{
+  "name": "zeropoint",
+  "version": "1.0.0",
+  "description": "ZeroPoint — Precision Reticle Overlay, Dynamic Designer, Community Vault & 3D Aim Lab (Anti-Cheat Safe Native DWM Overlay)",
+  "author": "ZeroPoint",
+  "homepage": "https://github.com/sigmasigmaboi124/Crosshair",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sigmasigmaboi124/Crosshair.git"
+  },
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build:icons": "node scripts/generate-icons.mjs",
+    "build:bridge": "dotnet build native/WinBridge/WinBridge.csproj -c Release -o native/WinBridge/out",
+    "build:bridge:prod": "dotnet publish native/WinBridge/WinBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -p:DebugSymbols=false -o native/WinBridge/publish",
+    "build:electron": "tsc -p tsconfig.node.json && node scripts/write-build-meta.mjs",
+    "build:web": "vite build",
+    "build": "npm run build:icons && npm run build:bridge && npm run build:electron && npm run build:web",
+    "build:prod": "npm run build:icons && npm run build:bridge:prod && npm run build:electron && npm run build:web",
+    "dist:win": "npm run build:prod && electron-builder --win --publish never",
+    "dist:dir": "npm run build:prod && electron-builder --win --dir",
+    "dev:web": "vite",
+    "start": "npm run build && electron .",
+    "start:fast": "electron ."
+  },
+  "build": {
+    "appId": "com.zeropoint.app",
+    "productName": "ZeroPoint",
+    "copyright": "Copyright © 2026 ZeroPoint",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "native/WinBridge/publish/WinBridge.exe",
+        "to": "WinBridge/WinBridge.exe"
+      },
+      {
+        "from": "dist-electron/build-meta.json",
+        "to": "build-meta.json"
+      },
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ZeroPoint",
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "sigmasigmaboi124",
+        "repo": "Crosshair",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2",
+    "lucide-react": "^0.511.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.7",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@types/three": "^0.176.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

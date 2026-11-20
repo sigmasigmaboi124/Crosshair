@@ -1,0 +1,277 @@
+import { LanguageCode } from '../types/crosshair';
+
+export interface LanguageMeta {
+  code: LanguageCode;
+  name: string;
+  nativeName: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español' },
+  { code: 'fr', name: 'French', nativeName: 'Français' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어' },
+  { code: 'zh', name: 'Simplified Chinese', nativeName: '简体中文' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
+  { code: 'pl', name: 'Polish', nativeName: 'Polski' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
+];
+
+type TranslationDict = {
+  navDesigner: string;
+  navCommunity: string;
+  navProfiles: string;
+  navAimTrainer: string;
+  navMonitors: string;
+  navKeybinds: string;
+  navAchievements: string;
+  navSafety: string;
+  overlayLive: string;
+  overlayPaused: string;
+  saveProfile: string;
+  shareCode: string;
+  importCode: string;
+  exportPng: string;
+  exportSvg: string;
+  safeVerified: string;
+  strictMode: string;
+  startTraining: string;
+  dailyChallenge: string;
+  leaderboards: string;
+};
+
+const EN: TranslationDict = {
+  navDesigner: 'Precision Designer',
+  navCommunity: 'Community Hub',
+  navProfiles: 'Saved Armory',
+  navAimTrainer: 'The Range 3D',
+  navMonitors: 'Monitors & Offset',
+  navKeybinds: 'Inputs & Hotkeys',
+  navAchievements: 'Achievements',
+  navSafety: 'Safety & Settings',
+  overlayLive: 'OVERLAY LIVE',
+  overlayPaused: 'OVERLAY OFF',
+  saveProfile: 'Save Profile',
+  shareCode: 'Copy Share Code',
+  importCode: 'Import Code',
+  exportPng: 'Export PNG',
+  exportSvg: 'Export SVG',
+  safeVerified: 'Zero-Injection Safe',
+  strictMode: 'Ultra-Strict Static Mode',
+  startTraining: 'Launch Session',
+  dailyChallenge: 'Daily Challenge',
+  leaderboards: 'Leaderboards',
+};
+
+const DICTIONARIES: Record<LanguageCode, Partial<TranslationDict>> = {
+  en: EN,
+  es: {
+    navDesigner: 'Diseñador Precisión',
+    navCommunity: 'Comunidad',
+    navProfiles: 'Mis Perfiles',
+    navAimTrainer: 'Campo de Tiro 3D',
+    navMonitors: 'Monitores y Posición',
+    navKeybinds: 'Controles y Teclas',
+    navAchievements: 'Logros',
+    navSafety: 'Seguridad y Ajustes',
+    overlayLive: 'OVERLAY ACTIVO',
+    overlayPaused: 'OVERLAY APAGADO',
+    saveProfile: 'Guardar Perfil',
+    shareCode: 'Copiar Código',
+    importCode: 'Importar Código',
+    exportPng: 'Exportar PNG',
+    exportSvg: 'Exportar SVG',
+    safeVerified: 'Seguro Sin Inyección',
+    startTraining: 'Iniciar Práctica',
+    dailyChallenge: 'Desafío Diario',
+    leaderboards: 'Clasificación',
+  },
+  fr: {
+    navDesigner: 'Créateur Précision',
+    navCommunity: 'Communauté',
+    navProfiles: 'Profils Sauvés',
+    navAimTrainer: 'Stand de Tir 3D',
+    navMonitors: 'Écrans & Décalage',
+    navKeybinds: 'Entrées & Raccourcis',
+    navAchievements: 'Succès',
+    navSafety: 'Sécurité & Réglages',
+    overlayLive: 'OVERLAY ACTIF',
+    overlayPaused: 'OVERLAY INACTIF',
+    saveProfile: 'Enregistrer',
+    shareCode: 'Copier le Code',
+    importCode: 'Importer Code',
+    startTraining: 'Lancer Session',
+    dailyChallenge: 'Défi Quotidien',
+    leaderboards: 'Classement',
+  },
+  de: {
+    navDesigner: 'Präzisions-Designer',
+    navCommunity: 'Community-Hub',
+    navProfiles: 'Gespeicherte Profile',
+    navAimTrainer: '3D-Schießstand',
+    navMonitors: 'Monitore & Versatz',
+    navKeybinds: 'Tasten & Eingaben',
+    navAchievements: 'Erfolge',
+    navSafety: 'Sicherheit & Setup',
+    overlayLive: 'OVERLAY AKTIV',
+    overlayPaused: 'OVERLAY AUS',
+    saveProfile: 'Profil speichern',
+    shareCode: 'Code kopieren',
+    importCode: 'Code importieren',
+    startTraining: 'Training starten',
+    dailyChallenge: 'Tages-Challenge',
+    leaderboards: 'Bestenlisten',
+  },
+  pt: {
+    navDesigner: 'Designer de Mira',
+    navCommunity: 'Comunidade',
+    navProfiles: 'Perfis Salvos',
+    navAimTrainer: 'Treino de Mira 3D',
+    navMonitors: 'Monitores e Posição',
+    navKeybinds: 'Atalhos e Controles',
+    navAchievements: 'Conquistas',
+    navSafety: 'Segurança e Ajustes',
+    overlayLive: 'OVERLAY ATIVO',
+    overlayPaused: 'OVERLAY DESLIGADO',
+    saveProfile: 'Salvar Perfil',
+    shareCode: 'Copiar Código',
+    importCode: 'Importar Código',
+    startTraining: 'Iniciar Treino',
+    dailyChallenge: 'Desafio Diário',
+    leaderboards: 'Rankings',
+  },
+  ja: {
+    navDesigner: 'クロスヘア設計',
+    navCommunity: 'コミュニティ',
+    navProfiles: '保存プロファイル',
+    navAimTrainer: '3D エイム練習場',
+    navMonitors: 'モニター・位置調整',
+    navKeybinds: '入力・ホットキー',
+    navAchievements: '実績',
+    navSafety: '安全性と設定',
+    overlayLive: 'オーバーレイ有効',
+    overlayPaused: 'オーバーレイ停止',
+    saveProfile: 'プロファイル保存',
+    shareCode: '共有コードコピー',
+    importCode: 'コード読込',
+    startTraining: 'セッション開始',
+    dailyChallenge: 'デイリーチャレンジ',
+    leaderboards: 'ランキング',
+  },
+  ko: {
+    navDesigner: '정밀 조준선 제작',
+    navCommunity: '커뮤니티 허브',
+    navProfiles: '저장된 프로필',
+    navAimTrainer: '3D 에임 훈련장',
+    navMonitors: '모니터 및 위치',
+    navKeybinds: '입력 및 단축키',
+    navAchievements: '업적',
+    navSafety: '안전 및 설정',
+    overlayLive: '오버레이 활성',
+    overlayPaused: '오버레이 꺼짐',
+    saveProfile: '프로필 저장',
+    shareCode: '공유 코드 복사',
+    importCode: '코드 가져오기',
+    startTraining: '훈련 시작',
+    dailyChallenge: '일일 챌린지',
+    leaderboards: '리더보드',
+  },
+  zh: {
+    navDesigner: '精准准星设计',
+    navCommunity: '社区准星库',
+    navProfiles: '已存方案',
+    navAimTrainer: '3D 练枪靶场',
+    navMonitors: '显示器与偏移',
+    navKeybinds: '按键与手柄',
+    navAchievements: '成就系统',
+    navSafety: '防封安全与设置',
+    overlayLive: '准星已开启',
+    overlayPaused: '准星已关闭',
+    saveProfile: '保存方案',
+    shareCode: '复制分享码',
+    importCode: '导入代码',
+    startTraining: '开始训练',
+    dailyChallenge: '每日挑战',
+    leaderboards: '排行榜',
+  },
+  ru: {
+    navDesigner: 'Дизайнер прицела',
+    navCommunity: 'Сообщество',
+    navProfiles: 'Профили',
+    navAimTrainer: '3D Тир (Аим)',
+    navMonitors: 'Мониторы и сдвиг',
+    navKeybinds: 'Клавиши и геймпад',
+    navAchievements: 'Достижения',
+    navSafety: 'Защита и настройки',
+    overlayLive: 'ОВЕРЛЕЙ АКТИВЕН',
+    overlayPaused: 'ОВЕРЛЕЙ ВЫКЛ',
+    saveProfile: 'Сохранить',
+    shareCode: 'Копировать код',
+    importCode: 'Импорт кода',
+    startTraining: 'Начать тренировку',
+    dailyChallenge: 'Ежедневное испытание',
+    leaderboards: 'Таблица лидеров',
+  },
+  tr: {
+    navDesigner: 'Nişangah Tasarımı',
+    navCommunity: 'Topluluk',
+    navProfiles: 'Kayıtlı Profiller',
+    navAimTrainer: '3D Aim Poligonu',
+    navMonitors: 'Monitör ve Konum',
+    navKeybinds: 'Tuşlar ve Kontroller',
+    navAchievements: 'Başarımlar',
+    navSafety: 'Güvenlik ve Ayarlar',
+    overlayLive: 'OVERLAY AKTİF',
+    overlayPaused: 'OVERLAY KAPALI',
+    saveProfile: 'Profili Kaydet',
+    shareCode: 'Kodu Kopyala',
+    importCode: 'Kod İçe Aktar',
+    startTraining: 'Antrenmanı Başlat',
+    dailyChallenge: 'Günlük Meydan Okuma',
+    leaderboards: 'Liderlik Tablosu',
+  },
+  pl: {
+    navDesigner: 'Projektant Celownika',
+    navCommunity: 'Społeczność',
+    navProfiles: 'Zapisane Profile',
+    navAimTrainer: 'Strzelnica 3D',
+    navMonitors: 'Monitory i Pozycja',
+    navKeybinds: 'Skróty i Sterowanie',
+    navAchievements: 'Osiągnięcia',
+    navSafety: 'Bezpieczeństwo',
+    overlayLive: 'NAKŁADKA AKTYWNA',
+    overlayPaused: 'NAKŁADKA WYŁ.',
+    saveProfile: 'Zapisz Profil',
+    shareCode: 'Kopiuj Kod',
+    importCode: 'Importuj Kod',
+    startTraining: 'Rozpocznij Trening',
+    dailyChallenge: 'Wyzwanie Dnia',
+    leaderboards: 'Ranking',
+  },
+  it: {
+    navDesigner: 'Designer Mirino',
+    navCommunity: 'Community',
+    navProfiles: 'Profili Salvati',
+    navAimTrainer: 'Poligono 3D',
+    navMonitors: 'Monitor e Posizione',
+    navKeybinds: 'Input e Tasti',
+    navAchievements: 'Obiettivi',
+    navSafety: 'Sicurezza e Opzioni',
+    overlayLive: 'OVERLAY ATTIVO',
+    overlayPaused: 'OVERLAY SPENTO',
+    saveProfile: 'Salva Profilo',
+    shareCode: 'Copia Codice',
+    importCode: 'Importa Codice',
+    startTraining: 'Avvia Sessione',
+    dailyChallenge: 'Sfida Giornaliera',
+    leaderboards: 'Classifiche',
+  },
+};
+
+export function useT(lang: LanguageCode): TranslationDict {
+  return { ...EN, ...(DICTIONARIES[lang] ?? {}) };
+}
