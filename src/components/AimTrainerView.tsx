@@ -18,6 +18,12 @@ import { AimModeId, AimSessionRecord, DEFAULT_INPUT_STATE, LiveInputState } from
 import { CrosshairAnimationController } from '../engine/animationState';
 import { renderCrosshairCanvas } from '../engine/crosshairRenderer';
 import { aimAudio } from '../engine/audioSynth';
+import {
+  ReactionBenchmarkView,
+  RecoilWeaponId,
+  SessionTrendGraph,
+  WEAPON_PATTERNS,
+} from './AimTrainerExtras';
 
 interface AimTrainerViewProps {
   store: AppStore;
@@ -66,10 +72,22 @@ const MODES: ModeSpec[] = [
     isTracking: true,
   },
   {
+    id: 'recoil',
+    name: 'Recoil Control Lab',
+    tag: 'SPRAY PATTERN',
+    description: 'Master AK-47, Vandal & Phantom full-auto spray patterns on a live bullet-impact wall.',
+  },
+  {
+    id: 'reaction',
+    name: 'Reaction Benchmark',
+    tag: 'REFLEX MS',
+    description: '5-round sub-millisecond visual reflex test with percentile rank & live split tracking.',
+  },
+  {
     id: 'range',
     name: 'The Range Sandbox',
     tag: 'CROSSHAIR LAB',
-    description: 'Free-play 3D shooting bay (10m–50m) to test your custom crosshair, bloom & ADS live.',
+    description: 'Free-play 3D shooting bay with WASD strafe-dodging, moving bots & ADS testing.',
     isSandbox: true,
   },
   {
@@ -171,6 +189,9 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   const aimCfg = settings.aimSettings;
 
   const [selectedMode, setSelectedMode] = useState<AimModeId>('gridshot');
+  const [recoilWeapon, setRecoilWeapon] = useState<RecoilWeaponId>('ak47');
+  const [showRecoilGuide, setShowRecoilGuide] = useState<boolean>(true);
+  const [enableWasdStrafe, setEnableWasdStrafe] = useState<boolean>(true);
   const [phase, setPhase] = useState<'lobby' | 'playing' | 'summary'>('lobby');
   const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
   const [lastResult, setLastResult] = useState<AimSessionRecord | null>(null);
@@ -188,6 +209,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
     timeLeft: aimCfg.durationSec,
     isOnTarget: false,
     hitFlash: 0,
+    ammoLeft: 30,
+    magSize: 30,
   });
 
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -269,7 +292,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   };
 
   useEffect(() => {
-    if (phase !== 'playing') return;
+    if (phase !== 'playing' || selectedMode === 'reaction') return;
     const container = mountRef.current;
     if (!container) return;
 
@@ -451,8 +474,57 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
       });
     };
 
-    // Initial spawns by mode
-    if (selectedMode === 'gridshot' || selectedMode === 'daily') {
+    // Recoil Control Lab target wall, bullseye rings, ghost guide & bullet holes
+    const weaponSpec = WEAPON_PATTERNS[recoilWeapon] ?? WEAPON_PATTERNS.ak47;
+    const recoilWallZ = -13.5;
+    const recoilBullseyeY = 2.3;
+    const bulletDecals: THREE.Mesh[] = [];
+    let recoilGhostMesh: THREE.Mesh | null = null;
+    let recoilBulletIndex = 0;
+    let nextFireAt = 0;
+    let reloadUntil = 0;
+    let cumKickPitch = 0;
+    let cumKickYaw = 0;
+
+    const clearBulletDecals = () => {
+      for (const d of bulletDecals) {
+        scene.remove(d);
+        d.geometry.dispose();
+        (d.material as THREE.Material).dispose();
+      }
+      bulletDecals.length = 0;
+    };
+
+    if (selectedMode === 'recoil') {
+      // Tactical bullseye target board
+      const board = new THREE.Mesh(
+        new THREE.PlaneGeometry(7.2, 6.2),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 })
+      );
+      board.position.set(0, recoilBullseyeY, recoilWallZ);
+      scene.add(board);
+
+      const addRing = (inner: number, outer: number, hex: number, zOff: number) => {
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(inner, outer, 48),
+          new THREE.MeshBasicMaterial({ color: hex, side: THREE.DoubleSide })
+        );
+        ring.position.set(0, recoilBullseyeY, recoilWallZ + zOff);
+        scene.add(ring);
+      };
+      addRing(0, 0.36, 0x10f59b, 0.02); // Tight head bullseye
+      addRing(0.38, 0.78, 0x00f0ff, 0.018); // Inner chest zone
+      addRing(0.80, 1.45, 0x334155, 0.015); // Outer ring
+
+      if (showRecoilGuide) {
+        recoilGhostMesh = new THREE.Mesh(
+          new THREE.RingGeometry(0.14, 0.22, 24),
+          new THREE.MeshBasicMaterial({ color: 0xffbe0b, side: THREE.DoubleSide })
+        );
+        recoilGhostMesh.position.set(0, recoilBullseyeY, recoilWallZ + 0.05);
+        scene.add(recoilGhostMesh);
+      }
+    } else if (selectedMode === 'gridshot' || selectedMode === 'daily') {
       const used: number[] = [];
       for (let i = 0; i < 3; i++) {
         spawnGridshotOne(used);
@@ -475,9 +547,14 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
       addTarget(1.8, 2.0, -28, 0.5);
     }
 
-    // Gameplay telemetry state
+    // Gameplay telemetry state + 3D WASD strafe-dodge kinematics
     let yaw = 0;
     let pitch = 0;
+    let playerX = 0;
+    let playerZ = 0;
+    let playerY = 1.7;
+    let playerVy = 0;
+    const keysDown = new Set<string>();
     let score = 0;
     let hits = 0;
     let misses = 0;
@@ -551,24 +628,53 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
       if (aimCfgRef.current.soundEnabled) aimAudio.playMiss(aimCfgRef.current.soundVolume);
     };
 
+    // Raw-input pointer lock + warp-spike guard (eliminates Chromium high-polling mouse jerks)
+    let lockAcquiredAt = 0;
+    let ignoreInitialMoves = 0;
+
     const onMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement !== renderer.domElement) return;
+      // Drop synthetic cursor-recenter events right after acquiring pointer lock
+      if (ignoreInitialMoves > 0 || performance.now() - lockAcquiredAt < 45) {
+        ignoreInitialMoves = Math.max(0, ignoreInitialMoves - 1);
+        return;
+      }
+      const dx = e.movementX;
+      const dy = e.movementY;
+      // Filter impossible single-packet OS cursor-warp spikes (Chromium Pointer Lock bug)
+      if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.abs(dx) > 260 || Math.abs(dy) > 260) {
+        return;
+      }
       const radPerCount = getYawPerCount(aimCfgRef.current.gamePreset, aimCfgRef.current.inGameSens);
       const adsScale = localInput.rmb ? 0.65 : 1.0;
-      yaw -= e.movementX * radPerCount * adsScale;
-      pitch -= e.movementY * radPerCount * adsScale;
+      yaw -= dx * radPerCount * adsScale;
+      pitch -= dy * radPerCount * adsScale;
       const maxPitch = Math.PI * 0.44;
       pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
     };
 
     const safeRequestPointerLock = () => {
       try {
-        const res = renderer.domElement.requestPointerLock?.() as unknown as Promise<void> | undefined;
-        if (res && typeof res.catch === 'function') {
-          res.catch(() => {});
+        const el = renderer.domElement as HTMLCanvasElement & {
+          requestPointerLock: (opts?: { unadjustedMovement?: boolean }) => Promise<void> | void;
+        };
+        const res = el.requestPointerLock?.({ unadjustedMovement: true });
+        if (res && typeof (res as Promise<void>).catch === 'function') {
+          (res as Promise<void>).catch(() => {
+            try {
+              const fb = el.requestPointerLock?.();
+              if (fb && typeof (fb as Promise<void>).catch === 'function') (fb as Promise<void>).catch(() => {});
+            } catch {
+              // Ignore in restricted contexts
+            }
+          });
         }
       } catch {
-        // Ignore in restricted webview contexts
+        try {
+          renderer.domElement.requestPointerLock?.();
+        } catch {
+          // Ignore
+        }
       }
     };
 
@@ -579,7 +685,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
       }
       if (e.button === 0) {
         localInput.lmb = true;
-        if (!modeSpec.isTracking) performSingleShot();
+        if (!modeSpec.isTracking && selectedMode !== 'recoil') performSingleShot();
       } else if (e.button === 2) {
         localInput.rmb = true;
       }
@@ -592,21 +698,35 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
 
     const onKeyDown = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
+      keysDown.add(k);
       if (k === 'w' || k === 'a' || k === 's' || k === 'd') localInput.moving = true;
       if (k === 'shift') localInput.sprint = true;
       if (k === 'control') localInput.crouch = true;
       if (k === ' ') localInput.jump = true;
+      if (k === 'r' && selectedMode === 'recoil') {
+        recoilBulletIndex = 0;
+        cumKickPitch = 0;
+        cumKickYaw = 0;
+        reloadUntil = performance.now() + 350;
+        clearBulletDecals();
+      }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-      if (k === 'w' || k === 'a' || k === 's' || k === 'd') localInput.moving = false;
+      keysDown.delete(k);
+      localInput.moving = keysDown.has('w') || keysDown.has('a') || keysDown.has('s') || keysDown.has('d');
       if (k === 'shift') localInput.sprint = false;
       if (k === 'control') localInput.crouch = false;
       if (k === ' ') localInput.jump = false;
     };
 
     const onPointerLockChange = () => {
-      setIsPointerLocked(document.pointerLockElement === renderer.domElement);
+      const locked = document.pointerLockElement === renderer.domElement;
+      if (locked) {
+        lockAcquiredAt = performance.now();
+        ignoreInitialMoves = 2;
+      }
+      setIsPointerLocked(locked);
     };
     const onContextMenu = (e: MouseEvent) => e.preventDefault();
 
@@ -674,10 +794,128 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         return;
       }
 
-      // Smooth ADS FOV zoom
+      // Smooth ADS FOV zoom + WASD Strafe-Dodging 3D Movement
       const targetFov = localInput.rmb ? aimCfgRef.current.fov * 0.78 : aimCfgRef.current.fov;
       camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 16);
       camera.updateProjectionMatrix();
+
+      if (enableWasdStrafe && isLockedNow && selectedMode !== 'recoil') {
+        const moveSpeed = localInput.crouch ? 2.6 : localInput.sprint ? 6.8 : 4.8;
+        let mx = 0;
+        let mz = 0;
+        if (keysDown.has('w')) mz -= 1;
+        if (keysDown.has('s')) mz += 1;
+        if (keysDown.has('a')) mx -= 1;
+        if (keysDown.has('d')) mx += 1;
+        if (mx !== 0 || mz !== 0) {
+          const len = Math.hypot(mx, mz);
+          mx /= len;
+          mz /= len;
+          const sinY = Math.sin(yaw);
+          const cosY = Math.cos(yaw);
+          playerX += (mx * cosY + mz * sinY) * moveSpeed * dt;
+          playerZ += (mz * cosY - mx * sinY) * moveSpeed * dt;
+          playerX = Math.max(-5.5, Math.min(5.5, playerX));
+          playerZ = Math.max(-2.5, Math.min(2.5, playerZ));
+        }
+        const groundY = localInput.crouch ? 1.15 : 1.7;
+        if (keysDown.has(' ') && Math.abs(playerY - groundY) < 0.04) {
+          playerVy = 4.6;
+        }
+        playerVy -= 13.5 * dt;
+        playerY += playerVy * dt;
+        if (playerY <= groundY) {
+          playerY = groundY;
+          playerVy = 0;
+        }
+        camera.position.set(playerX, playerY, playerZ);
+      }
+
+      // Recoil Control Lab full-auto spray simulation & bullet impact wall
+      if (selectedMode === 'recoil' && isLockedNow) {
+        if (localInput.lmb && now >= nextFireAt && now >= reloadUntil) {
+          const intervalMs = 60000 / weaponSpec.rpm;
+          nextFireAt = now + intervalMs;
+          const kick = weaponSpec.kicks[recoilBulletIndex] ?? [0.002, 0];
+
+          // Compute exact ray hit on recoil wall at z = recoilWallZ BEFORE adding next kick
+          raycaster.setFromCamera(screenCenter, camera);
+          const tHit = (recoilWallZ - raycaster.ray.origin.z) / raycaster.ray.direction.z;
+          if (tHit > 0) {
+            const hitPt = raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, tHit);
+            const distFromBull = Math.hypot(hitPt.x, hitPt.y - recoilBullseyeY);
+            const isBullseye = distFromBull <= 0.38;
+            const isInner = distFromBull <= 0.80;
+
+            if (isBullseye) {
+              hits++;
+              streak++;
+              bestStreak = Math.max(bestStreak, streak);
+              score += 520 + Math.min(240, streak * 12);
+              hitFlash = 1;
+              if (aimCfgRef.current.soundEnabled) aimAudio.playHit(aimCfgRef.current.soundVolume, streak);
+            } else if (isInner) {
+              hits++;
+              score += 240;
+              if (aimCfgRef.current.soundEnabled) aimAudio.playTrackTick(aimCfgRef.current.soundVolume);
+            } else {
+              misses++;
+              streak = 0;
+              if (aimCfgRef.current.soundEnabled) aimAudio.playMiss(aimCfgRef.current.soundVolume);
+            }
+
+            const decalColor = isBullseye ? 0x10f59b : isInner ? 0x00f0ff : 0xff3358;
+            const decal = new THREE.Mesh(
+              new THREE.CircleGeometry(0.065, 10),
+              new THREE.MeshBasicMaterial({ color: decalColor })
+            );
+            decal.position.set(hitPt.x, hitPt.y, recoilWallZ + 0.03 + bulletDecals.length * 0.0005);
+            scene.add(decal);
+            bulletDecals.push(decal);
+            if (bulletDecals.length > 60) {
+              const old = bulletDecals.shift();
+              if (old) {
+                scene.remove(old);
+                old.geometry.dispose();
+                (old.material as THREE.Material).dispose();
+              }
+            }
+          }
+
+          // Apply realistic upward + horizontal recoil kick to camera
+          animCtrl.triggerManualFirePulse();
+          pitch = Math.min(Math.PI * 0.44, pitch + kick[0]);
+          yaw -= kick[1];
+          cumKickPitch += kick[0];
+          cumKickYaw += kick[1];
+          recoilBulletIndex++;
+
+          if (recoilBulletIndex >= weaponSpec.magSize) {
+            recoilBulletIndex = 0;
+            cumKickPitch = 0;
+            cumKickYaw = 0;
+            reloadUntil = now + 750;
+            if (aimCfgRef.current.soundEnabled) aimAudio.playKill(aimCfgRef.current.soundVolume);
+            setTimeout(() => clearBulletDecals(), 650);
+          }
+        } else if (!localInput.lmb && recoilBulletIndex > 0) {
+          // Smooth recoil reset on trigger release
+          recoilBulletIndex = Math.max(0, recoilBulletIndex - 1);
+          cumKickPitch *= Math.max(0, 1 - dt * 8);
+          cumKickYaw *= Math.max(0, 1 - dt * 8);
+        }
+
+        // Update optional yellow ghost guide showing inverse pull-down path
+        if (recoilGhostMesh) {
+          const distToWall = Math.abs(recoilWallZ - camera.position.z);
+          recoilGhostMesh.position.set(
+            -Math.tan(cumKickYaw) * distToWall * 0.65,
+            recoilBullseyeY - Math.tan(cumKickPitch) * distToWall * 0.65,
+            recoilWallZ + 0.06
+          );
+        }
+      }
+
       camera.rotation.y = yaw;
       camera.rotation.x = pitch;
 
@@ -823,6 +1061,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           timeLeft,
           isOnTarget,
           hitFlash,
+          ammoLeft: Math.max(0, weaponSpec.magSize - recoilBulletIndex),
+          magSize: weaponSpec.magSize,
         });
       }
 
@@ -845,7 +1085,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
       }
       renderer.dispose();
     };
-  }, [phase, selectedMode, todayStr]);
+  }, [phase, selectedMode, todayStr, recoilWeapon, showRecoilGuide, enableWasdStrafe]);
 
   const startSession = useCallback((mode?: AimModeId) => {
     if (mode) setSelectedMode(mode);
@@ -860,6 +1100,19 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
     const inches = countsPer360 / Math.max(100, aimCfg.dpi);
     return (inches * 2.54).toFixed(1);
   }, [aimCfg.gamePreset, aimCfg.inGameSens, aimCfg.dpi]);
+
+  // =================== REACTION BENCHMARK PLAYING VIEW ===================
+  if (phase === 'playing' && selectedMode === 'reaction') {
+    return (
+      <ReactionBenchmarkView
+        soundEnabled={aimCfg.soundEnabled}
+        soundVolume={aimCfg.soundVolume}
+        crosshairName={activeConfig.name}
+        onComplete={(rec) => finishRunCallbackRef.current(rec)}
+        onExit={() => setPhase('lobby')}
+      />
+    );
+  }
 
   // =================== PLAYING VIEW (BESPOKE AEROSPACE TELEMETRY HUD) ===================
   if (phase === 'playing') {
@@ -956,8 +1209,21 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         {/* Bottom Minimal Telemetry Strip */}
         <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none text-[11px] font-mono text-slate-400">
           <div className="px-2.5 py-1 rounded-lg bg-black/55 border border-white/10">
-            MODE: <span className="text-cyan-300">{currentModeSpec.name.toUpperCase()}</span> • RETICLE:{' '}
-            <span className="text-white">{activeConfig.name}</span>
+            MODE: <span className="text-cyan-300">{currentModeSpec.name.toUpperCase()}</span>
+            {selectedMode === 'recoil' && (
+              <>
+                {' '}• WEAPON: <span className="text-amber-300">{WEAPON_PATTERNS[recoilWeapon].name}</span> • MAG:{' '}
+                <span className="text-emerald-300">
+                  {hud.ammoLeft}/{hud.magSize}
+                </span>{' '}
+                (R: Reset)
+              </>
+            )}
+            {selectedMode !== 'recoil' && enableWasdStrafe && (
+              <>
+                {' '}• <span className="text-emerald-300">WASD STRAFE ON</span>
+              </>
+            )}
           </div>
           <div className="px-2.5 py-1 rounded-lg bg-black/55 border border-white/10">
             SENS: <span className="text-emerald-300">{cmPer360} cm/360°</span> • Press <span className="text-white">ESC</span> to Pause / Exit
@@ -981,10 +1247,19 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    const el = mountRef.current?.querySelector('canvas');
+                    const el = mountRef.current?.querySelector('canvas') as (HTMLCanvasElement & {
+                      requestPointerLock?: (opts?: { unadjustedMovement?: boolean }) => Promise<void> | void;
+                    }) | null;
                     try {
-                      const res = el?.requestPointerLock?.() as unknown as Promise<void> | undefined;
-                      if (res && typeof res.catch === 'function') res.catch(() => {});
+                      const res = el?.requestPointerLock?.({ unadjustedMovement: true });
+                      if (res && typeof (res as Promise<void>).catch === 'function') {
+                        (res as Promise<void>).catch(() => {
+                          try {
+                            const fb = el?.requestPointerLock?.();
+                            if (fb && typeof (fb as Promise<void>).catch === 'function') (fb as Promise<void>).catch(() => {});
+                          } catch {}
+                        });
+                      }
                     } catch {
                       // Ignore
                     }
@@ -1280,6 +1555,50 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         </div>
       )}
 
+      {/* Recoil Weapon Bar & WASD Strafe-Dodge Quick Strip */}
+      <div className="rounded-xl bg-[#0d131f] border border-slate-800/90 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Recoil Weapon:</span>
+          {(['ak47', 'vandal', 'phantom'] as RecoilWeaponId[]).map((wid) => (
+            <button
+              key={wid}
+              type="button"
+              onClick={() => setRecoilWeapon(wid)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                recoilWeapon === wid
+                  ? 'bg-amber-500/20 border-amber-400/60 text-amber-200'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              {WEAPON_PATTERNS[wid].name} ({WEAPON_PATTERNS[wid].game})
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowRecoilGuide((v) => !v)}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
+              showRecoilGuide
+                ? 'bg-cyan-500/15 border-cyan-400/50 text-cyan-200'
+                : 'bg-slate-900 border-slate-800 text-slate-400'
+            }`}
+          >
+            Ghost Guide: {showRecoilGuide ? 'ON' : 'OFF'}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setEnableWasdStrafe((v) => !v)}
+          className={`px-3 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+            enableWasdStrafe
+              ? 'bg-emerald-500/20 border-emerald-400/55 text-emerald-200'
+              : 'bg-slate-900 border-slate-800 text-slate-400'
+          }`}
+        >
+          WASD Strafe-Dodging: {enableWasdStrafe ? 'ON' : 'OFF'}
+        </button>
+      </div>
+
       {/* Main Split: Training Modes + Leaderboards & Analytics */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-1">
         {/* Left: Mode Selector Cards */}
@@ -1350,8 +1669,13 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           })}
         </div>
 
-        {/* Right: Leaderboards & Session History */}
+        {/* Right: Leaderboards, Trend Graph & Session History */}
         <div className="xl:col-span-5 flex flex-col gap-3">
+          <SessionTrendGraph
+            records={selectedMode === 'daily' ? dailyRecords : modeRecords}
+            modeName={currentModeSpec.name}
+          />
+
           <div className="rounded-2xl bg-[#0d131f] border border-slate-800/90 p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-200 flex items-center gap-2">

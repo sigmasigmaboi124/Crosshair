@@ -88,12 +88,15 @@ export function renderCrosshairCanvas(
     ctx.shadowBlur = 0;
   }
 
-  // 1. Custom Image / Animated Sprite Layer
+  // 1. Custom Image / Pixel-Art / Animated Sprite Layer
   if (config.image.enabled && config.image.dataUrl) {
     const img = getCachedImage(config.image.dataUrl);
     if (img) {
       ctx.save();
       ctx.globalAlpha = config.image.opacity * frame.opacityMult;
+      if (config.image.fileName === 'pixel-art.png') {
+        ctx.imageSmoothingEnabled = false;
+      }
       ctx.rotate(((config.image.rotation + frame.rotationDeltaDeg) * Math.PI) / 180);
       const maxDim = 64 * config.image.scale;
       const ratio = Math.min(maxDim / img.naturalWidth, maxDim / img.naturalHeight);

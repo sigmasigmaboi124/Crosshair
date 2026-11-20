@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AppStore } from '../store/useAppStore';
 import { CrosshairPreview } from './CrosshairPreview';
+import { PixelDrawEditor } from './PixelDrawEditor';
 import { ColorPickerRow, SectionCard, SliderRow, ToggleRow } from './ui/Controls';
 import {
   AdsAction,
@@ -32,7 +33,7 @@ import {
 } from '../engine/shareCodec';
 import { useT } from '../data/i18n';
 
-type DesignerSubTab = 'geometry' | 'dot-shapes' | 'outline-image' | 'dynamics' | 'position-share';
+type DesignerSubTab = 'geometry' | 'dot-shapes' | 'outline-image' | 'pixel-draw' | 'dynamics' | 'position-share';
 
 interface DesignerViewProps {
   store: AppStore;
@@ -108,6 +109,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
     { id: 'geometry', label: 'Lines' },
     { id: 'dot-shapes', label: 'Dot & Shapes' },
     { id: 'outline-image', label: 'Outline & Img' },
+    { id: 'pixel-draw', label: 'Pixel Draw' },
     { id: 'dynamics', label: 'Dynamics & ADS' },
     { id: 'position-share', label: 'Offset & Export' },
   ];
@@ -295,7 +297,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
       {/* RIGHT COLUMN: Precision Controls Inspector */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* Sub-tab Strip */}
-        <div className="grid grid-cols-5 gap-1 bg-[#0a0f19] border border-slate-800/90 rounded-xl p-1 mb-3 shrink-0">
+        <div className="grid grid-cols-6 gap-1 bg-[#0a0f19] border border-slate-800/90 rounded-xl p-1 mb-3 shrink-0">
           {subTabs.map((tab) => (
             <button
               key={tab.id}
@@ -909,6 +911,11 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 )}
               </SectionCard>
             </>
+          )}
+
+          {/* TAB 3B: PIXEL-ART & FREEHAND DRAW STUDIO */}
+          {subTab === 'pixel-draw' && (
+            <PixelDrawEditor config={activeConfig} onUpdateConfig={updateActiveConfig} />
           )}
 
           {/* TAB 4: DYNAMIC ANIMATIONS, BLOOM, MOVEMENT & SMART ADS */}

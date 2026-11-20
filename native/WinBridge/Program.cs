@@ -58,6 +58,7 @@ internal static class Program
     private static volatile bool _enableForegroundWindowWatch = false;
     private static volatile bool _enableOverlayTopmostKeepAlive = true;
     private static volatile bool _studioConnected = false;
+    private static volatile bool _intentionalDetach = false;
     private static volatile bool _headlessTestMode = false;
     private static volatile int _customToggleVk = VK_X;
     private static volatile bool _customToggleAlt = true;
@@ -439,6 +440,7 @@ internal static class Program
                 case "detachStudio":
                     lock (_pipeOutLock)
                     {
+                        _intentionalDetach = true;
                         _studioConnected = false;
                         _pipeWriter = null;
                     }
@@ -477,6 +479,7 @@ internal static class Program
                 {
                     _pipeWriter = writer;
                     _studioConnected = true;
+                    _intentionalDetach = false;
                 }
 
                 Emit(BuildReadyPayload());
@@ -486,6 +489,15 @@ internal static class Program
                 while (_running && server.IsConnected && (line = await reader.ReadLineAsync()) != null)
                 {
                     HandleCommandLine(line);
+                }
+
+                // If ZeroPoint.exe disconnected WITHOUT sending detachStudio (e.g. Task Manager "End Task"),
+                // exit WinBridge immediately so the crosshair overlay closes cleanly too!
+                if (_running && !_intentionalDetach)
+                {
+                    _running = false;
+                    try { _overlayForm?.BeginInvoke(new Action(() => Application.ExitThread())); } catch { }
+                    break;
                 }
             }
             catch

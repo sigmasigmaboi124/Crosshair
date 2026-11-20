@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>WinBridge</AssemblyName>
+    <Product>ZeroPoint</Product>
+    <AssemblyTitle>ZeroPoint Crosshair Overlay</AssemblyTitle>
+    <FileDescription>ZeroPoint Native Crosshair Overlay</FileDescription>
     <PlatformTarget>x64</PlatformTarget>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>

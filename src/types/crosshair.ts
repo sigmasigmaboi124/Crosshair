@@ -179,7 +179,16 @@ export interface MonitorInfo {
   scaleFactor: number;
 }
 
-export type AimModeId = 'gridshot' | 'spidershot' | 'tracking' | 'microshot' | 'switchtrack' | 'range' | 'daily';
+export type AimModeId =
+  | 'gridshot'
+  | 'spidershot'
+  | 'tracking'
+  | 'microshot'
+  | 'switchtrack'
+  | 'recoil'
+  | 'reaction'
+  | 'range'
+  | 'daily';
 
 export interface AimSessionRecord {
   id: string;

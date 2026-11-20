@@ -86,6 +86,7 @@ public sealed class CrosshairImageDto
 {
     public bool enabled { get; set; }
     public string? dataUrl { get; set; }
+    public string? fileName { get; set; }
     public float scale { get; set; } = 1;
     public float opacity { get; set; } = 1;
     public float rotation { get; set; }
@@ -642,13 +643,19 @@ public sealed class NativeOverlayForm : Form
             g.FillPath(pgb, gp);
         }
 
-        // 1. Custom Uploaded Image Layer
+        // 1. Custom Uploaded Image / Pixel-Art Layer
         if (cfg.image.enabled && !string.IsNullOrEmpty(cfg.image.dataUrl))
         {
             var img = ResolveCustomImage(cfg.image.dataUrl);
             if (img != null)
             {
                 var st = g.Save();
+                bool isPixelArt = string.Equals(cfg.image.fileName, "pixel-art.png", StringComparison.OrdinalIgnoreCase);
+                if (isPixelArt)
+                {
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.PixelOffsetMode = PixelOffsetMode.Half;
+                }
                 g.RotateTransform(cfg.image.rotation + f.RotationDeltaDeg);
                 float maxDim = 64f * cfg.image.scale;
                 float ratio = Math.Min(maxDim / img.Width, maxDim / img.Height);
@@ -658,7 +665,7 @@ public sealed class NativeOverlayForm : Form
                 var cm = new ColorMatrix { Matrix33 = Math.Clamp(cfg.image.opacity * f.OpacityMult, 0f, 1f) };
                 ia.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                 g.DrawImage(img,
-                    new Rectangle((int)(-dw / 2f), (int)(-dh / 2f), Math.Max(1, (int)dw), Math.Max(1, (int)dh)),
+                    new Rectangle((int)MathF.Round(-dw / 2f), (int)MathF.Round(-dh / 2f), Math.Max(1, (int)MathF.Round(dw)), Math.Max(1, (int)MathF.Round(dh))),
                     0, 0, img.Width, img.Height, GraphicsUnit.Pixel, ia);
                 g.Restore(st);
             }
