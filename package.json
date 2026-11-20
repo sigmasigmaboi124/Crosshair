@@ -80,14 +80,12 @@
     "portable": {
       "artifactName": "${productName}-Portable-${version}.${ext}"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "sigmasigmaboi124",
-        "repo": "Crosshair",
-        "releaseType": "release"
-      }
-    ]
+    "publish": {
+      "provider": "github",
+      "owner": "sigmasigmaboi124",
+      "repo": "Crosshair",
+      "releaseType": "release"
+    }
   },
   "dependencies": {
     "electron-updater": "^6.6.2",

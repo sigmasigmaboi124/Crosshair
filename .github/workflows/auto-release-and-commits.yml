@@ -33,25 +33,24 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Compute Version (Tag Release vs Rolling Commit Pre-Release)
-        id: ver
+      - name: Configure Version & Release Channel
         shell: pwsh
         run: |
-          $pkg = Get-Content package.json -Raw | ConvertFrom-Json
-          $baseVer = $pkg.version
+          $pkgPath = "package.json"
+          $pkg = Get-Content $pkgPath -Raw | ConvertFrom-Json
+          $baseVer = ($pkg.version -split '-')[0]
           if ($env:GITHUB_REF_TYPE -eq 'tag') {
             $tagVer = $env:GITHUB_REF_NAME -replace '^v', ''
-            echo "version=$tagVer" >> $env:GITHUB_OUTPUT
-            echo "prerelease=false" >> $env:GITHUB_OUTPUT
-            echo "release_type=release" >> $env:GITHUB_OUTPUT
+            $pkg.version = $tagVer
+            $pkg.build.publish.releaseType = "release"
+            Write-Host "Publishing STABLE GitHub Release v$tagVer"
           } else {
-            $shortSha = $env:GITHUB_SHA.Substring(0, 7)
             $commitVer = "$baseVer-commit.$($env:GITHUB_RUN_NUMBER)"
-            npm version $commitVer --no-git-tag-version --allow-same-version
-            echo "version=$commitVer" >> $env:GITHUB_OUTPUT
-            echo "prerelease=true" >> $env:GITHUB_OUTPUT
-            echo "release_type=prerelease" >> $env:GITHUB_OUTPUT
+            $pkg.version = $commitVer
+            $pkg.build.publish.releaseType = "prerelease"
+            Write-Host "Publishing COMMIT Auto-Update Pre-Release v$commitVer"
           }
+          $pkg | ConvertTo-Json -Depth 12 | Set-Content $pkgPath -Encoding UTF8
 
       - name: Build Self-Contained WinBridge, Electron & Studio UI
         run: npm run build:prod
@@ -59,4 +58,4 @@ jobs:
       - name: Package & Publish Windows Installer + Portable + Auto-Update Manifest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --publish always -c.publish.releaseType=${{ steps.ver.outputs.release_type }}
+        run: npx electron-builder --win --publish always
