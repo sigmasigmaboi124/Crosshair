@@ -66,6 +66,10 @@ function getStorePath(): string {
   return path.join(app.getPath('userData'), 'zeropoint-state.json');
 }
 
+function getBackupStorePath(): string {
+  return path.join(app.getPath('userData'), 'zeropoint-state.backup.json');
+}
+
 function getBridgeExecutablePath(): string {
   const prodPath = path.join(process.resourcesPath || '', 'WinBridge', 'WinBridge.exe');
   if (app.isPackaged && fs.existsSync(prodPath)) return prodPath;
@@ -124,20 +128,46 @@ function getAppIcon(): Electron.NativeImage | undefined {
 }
 
 function loadStoreFromDisk(): Record<string, unknown> | null {
-  try {
-    const p = getStorePath();
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  const candidates = [
+    getStorePath(),
+    getBackupStorePath(),
+    // Seamless migration if user saved crosshairs before the rename to ZeroPoint
+    path.join(app.getPath('appData'), 'crosshair-studio-x', 'crosshair-studio-x-state.json'),
+  ];
+  for (const p of candidates) {
+    try {
+      if (fs.existsSync(p)) {
+        const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
+        if (parsed && typeof parsed === 'object') {
+          return parsed as Record<string, unknown>;
+        }
+      }
+    } catch {
+      // Try next fallback/backup
     }
-  } catch {
-    // Ignore corrupt file
   }
   return null;
 }
 
 function saveStoreToDisk(data: Record<string, unknown>): void {
   try {
-    fs.writeFileSync(getStorePath(), JSON.stringify(data, null, 2), 'utf-8');
+    const target = getStorePath();
+    const backup = getBackupStorePath();
+    const tmp = `${target}.tmp`;
+    const serialized = JSON.stringify({ schemaVersion: 2, ...data }, null, 2);
+
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    // Keep last known-good backup before atomic replace
+    if (fs.existsSync(target)) {
+      try {
+        fs.copyFileSync(target, backup);
+      } catch {
+        // Ignore backup copy issue
+      }
+    }
+    fs.writeFileSync(tmp, serialized, 'utf-8');
+    fs.renameSync(tmp, target);
+
     // Also mirror full profile list into WinBridge so Tray/Hotkeys work with 0 MB Electron RAM!
     if (Array.isArray(data.profiles)) {
       const activeId = data.activeProfileId;

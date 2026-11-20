@@ -112,7 +112,35 @@ function createStarterProfiles(): SavedProfile[] {
   }));
 }
 
-const LS_KEY = 'crosshair-studio-x-v1';
+function normalizeCrosshairConfig(raw?: Partial<CrosshairConfig> | null): CrosshairConfig {
+  const base = createDefaultCrosshair();
+  if (!raw || typeof raw !== 'object') return base;
+  return {
+    ...base,
+    ...raw,
+    lines: { ...base.lines, ...(raw.lines ?? {}) },
+    outerLines: { ...base.outerLines, ...(raw.outerLines ?? {}) },
+    dot: { ...base.dot, ...(raw.dot ?? {}) },
+    ring: { ...base.ring, ...(raw.ring ?? {}) },
+    outline: { ...base.outline, ...(raw.outline ?? {}) },
+    image: { ...base.image, ...(raw.image ?? {}) },
+    animation: { ...base.animation, ...(raw.animation ?? {}) },
+    position: { ...base.position, ...(raw.position ?? {}) },
+  };
+}
+
+function normalizeAchievements(raw?: Partial<AchievementProgress> | null): AchievementProgress {
+  const base = createInitialAchievementProgress();
+  if (!raw || typeof raw !== 'object') return base;
+  return {
+    unlockedIds: Array.isArray(raw.unlockedIds) ? raw.unlockedIds : base.unlockedIds,
+    unlockedAt: raw.unlockedAt && typeof raw.unlockedAt === 'object' ? raw.unlockedAt : base.unlockedAt,
+    stats: { ...base.stats, ...(raw.stats ?? {}) },
+  };
+}
+
+const LS_KEY = 'zeropoint-state-v1';
+const LEGACY_LS_KEY = 'crosshair-studio-x-v1';
 
 interface ElectronAPI {
   isElectron: boolean;
@@ -250,20 +278,37 @@ export function useAppStore() {
       }
       if (!raw) {
         try {
-          const str = localStorage.getItem(LS_KEY);
+          const str = localStorage.getItem(LS_KEY) ?? localStorage.getItem(LEGACY_LS_KEY);
           if (str) raw = JSON.parse(str);
         } catch {
           raw = null;
         }
       }
       if (!cancelled && raw) {
-        if (raw.activeConfig) setActiveConfig(raw.activeConfig);
+        if (raw.activeConfig) setActiveConfig(normalizeCrosshairConfig(raw.activeConfig));
         if (raw.activeProfileId !== undefined) setActiveProfileId(raw.activeProfileId);
-        if (Array.isArray(raw.profiles) && raw.profiles.length > 0) setProfiles(raw.profiles);
+        if (Array.isArray(raw.profiles) && raw.profiles.length > 0) {
+          setProfiles(
+            raw.profiles.map((p) => ({
+              ...p,
+              config: normalizeCrosshairConfig(p.config),
+              gameTitleMatchers: Array.isArray(p.gameTitleMatchers) ? p.gameTitleMatchers : [],
+              monitorIndex: typeof p.monitorIndex === 'number' ? p.monitorIndex : 0,
+              quickSlot: typeof p.quickSlot === 'number' ? p.quickSlot : null,
+            }))
+          );
+        }
         if (Array.isArray(raw.favoritePresetIds)) setFavoritePresetIds(raw.favoritePresetIds);
-        if (Array.isArray(raw.userPublishedPresets)) setUserPublishedPresets(raw.userPublishedPresets);
+        if (Array.isArray(raw.userPublishedPresets)) {
+          setUserPublishedPresets(
+            raw.userPublishedPresets.map((item) => ({
+              ...item,
+              config: normalizeCrosshairConfig(item.config),
+            }))
+          );
+        }
         if (Array.isArray(raw.aimHistory)) setAimHistory(raw.aimHistory);
-        if (raw.achievements) setAchievements(raw.achievements);
+        if (raw.achievements) setAchievements(normalizeAchievements(raw.achievements));
         if (raw.settings) {
           setSettings({
             ...DEFAULT_SETTINGS,
@@ -295,28 +340,32 @@ export function useAppStore() {
     };
   }, []);
 
-  // Persist changes debounced
+  const persistNowRef = useRef<() => void>(() => {});
+  persistNowRef.current = () => {
+    if (!hydrated) return;
+    const data: PersistedData = {
+      activeConfig,
+      activeProfileId,
+      profiles,
+      favoritePresetIds,
+      userPublishedPresets,
+      aimHistory,
+      achievements,
+      settings,
+    };
+    const api = getElectronAPI();
+    if (api) api.savePersistedState(data);
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    } catch {
+      // Ignore quota exceeded on huge custom images
+    }
+  };
+
+  // Persist changes debounced + guarantee immediate flush before window close / update restart
   useEffect(() => {
     if (!hydrated) return;
-    const handle = setTimeout(() => {
-      const data: PersistedData = {
-        activeConfig,
-        activeProfileId,
-        profiles,
-        favoritePresetIds,
-        userPublishedPresets,
-        aimHistory,
-        achievements,
-        settings,
-      };
-      const api = getElectronAPI();
-      if (api) api.savePersistedState(data);
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify(data));
-      } catch {
-        // Ignore quota exceeded on huge custom images
-      }
-    }, 350);
+    const handle = setTimeout(() => persistNowRef.current(), 250);
     return () => clearTimeout(handle);
   }, [
     hydrated,
@@ -329,6 +378,12 @@ export function useAppStore() {
     achievements,
     settings,
   ]);
+
+  useEffect(() => {
+    const flush = () => persistNowRef.current();
+    window.addEventListener('beforeunload', flush);
+    return () => window.removeEventListener('beforeunload', flush);
+  }, []);
 
   // Sync live overlay window whenever active crosshair, ADS secondary profile, or monitor changes
   useEffect(() => {
@@ -715,10 +770,12 @@ export function useAppStore() {
       if (api) await api.downloadUpdate();
     },
     installUpdate: () => {
+      persistNowRef.current();
       const api = getElectronAPI();
       if (api) api.installUpdate();
     },
     pullCommitUpdate: async () => {
+      persistNowRef.current();
       const api = getElectronAPI();
       if (api) await api.pullCommitUpdate();
     },
