@@ -1,12 +1,10 @@
-﻿# ZeroPoint — 1-Line Windows Installer / Downloader
-# Usage: irm https://raw.githubusercontent.com/sigmasigmaboi124/Crosshair/main/install.ps1 | iex
-
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $ErrorActionPreference = 'Stop'
 $repo = 'sigmasigmaboi124/Crosshair'
 $headers = @{ 'User-Agent' = 'ZeroPoint-Installer' }
 
 Write-Host ""
-Write-Host "  ZEROPOINT — Downloading latest Windows build..." -ForegroundColor Cyan
+Write-Host "  ZEROPOINT - Downloading latest Windows build..." -ForegroundColor Cyan
 Write-Host ""
 
 $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases?per_page=15" -Headers $headers
@@ -14,7 +12,6 @@ if (-not $releases -or $releases.Count -eq 0) {
     throw "No published releases found yet at https://github.com/$repo/releases"
 }
 
-# Prefer latest stable release with a Setup EXE, otherwise fall back to latest commit pre-release with a Setup EXE
 $asset = $null
 $pickedRelease = $null
 
@@ -48,7 +45,6 @@ Write-Host "  Dest    : $outFile" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "  Downloading..." -ForegroundColor Yellow
 
-# Fast download via curl.exe (built into Windows 10/11) with native progress bar, fallback to Invoke-WebRequest
 if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
     & curl.exe -fL --progress-bar -o $outFile $asset.browser_download_url
     if ($LASTEXITCODE -ne 0) { throw "Download failed with exit code $LASTEXITCODE" }
