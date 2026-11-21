@@ -69,7 +69,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
     ctx.clearRect(0, 0, w, h);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? '#0d1320' : '#121a2b';
+        ctx.fillStyle = (x + y) % 2 === 0 ? '#121216' : '#18181e';
         ctx.fillRect(x * cell, y * cell, Math.ceil(cell), Math.ceil(cell));
       }
     }
@@ -103,7 +103,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
     }
 
     // Center alignment crosshair guide
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.42)';
+    ctx.strokeStyle = 'rgba(255, 85, 38, 0.45)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(w / 2, 0);
@@ -487,8 +487,8 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
               onClick={() => handleChangeGridSize(sz)}
               className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border cursor-pointer ${
                 gridSize === sz
-                  ? 'bg-cyan-500/20 border-cyan-400/60 text-cyan-200'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-[#25252e] border-[#444452] text-white'
+                  : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
               }`}
             >
               {sz}×{sz}
@@ -500,7 +500,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
         {/* Left: Interactive Pixel Grid Canvas */}
         <div className="xl:col-span-6 flex flex-col items-center gap-2">
-          <div className="relative rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-[0_0_24px_rgba(0,240,255,0.12)] bg-[#0a0f1a]">
+          <div className="relative rounded-xl overflow-hidden border-2 border-[#2e2e38] bg-[#0e0e11]">
             <canvas
               ref={displayCanvasRef}
               width={320}
@@ -514,7 +514,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
               style={{ imageRendering: 'pixelated' }}
             />
           </div>
-          <div className="text-[10px] font-mono text-slate-500 text-center">
+          <div className="text-[10px] font-mono text-[#727280] text-center">
             Left-Click: Draw • Right-Click: Quick Erase • Ctrl+Z / Ctrl+Y: Undo / Redo
           </div>
         </div>
@@ -537,8 +537,8 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                 onClick={() => setTool(id)}
                 className={`py-2 rounded-lg text-[11px] font-semibold border flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                   tool === id
-                    ? 'bg-cyan-500/20 border-cyan-400/60 text-cyan-200'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-[#25252e] border-[#444452] text-white'
+                    : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                 }`}
               >
                 {icon}
@@ -549,7 +549,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
 
           {/* Symmetry Selector */}
           <div className="space-y-1">
-            <span className="text-[11px] font-semibold text-slate-300">Symmetry Mode</span>
+            <span className="text-[11px] font-semibold text-[#d0d0d8]">Symmetry Mode</span>
             <div className="grid grid-cols-5 gap-1">
               {(
                 [
@@ -567,7 +567,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                   className={`py-1.5 rounded-lg text-[10px] font-bold border transition cursor-pointer ${
                     symmetry === m
                       ? 'bg-emerald-500/20 border-emerald-400/55 text-emerald-200'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                   }`}
                 >
                   {lbl}
@@ -579,7 +579,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
           {/* Brush Size + Undo/Redo + Auto-Outline + Clear */}
           <div className="flex items-center justify-between gap-1.5 flex-wrap">
             <div className="flex items-center gap-1">
-              <span className="text-[10px] font-mono text-slate-500 mr-0.5">BRUSH:</span>
+              <span className="text-[10px] font-mono text-[#727280] mr-0.5">BRUSH:</span>
               {([1, 2, 3] as const).map((sz) => (
                 <button
                   key={sz}
@@ -587,8 +587,8 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                   onClick={() => setBrushSize(sz)}
                   className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer ${
                     brushSize === sz
-                      ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200'
-                      : 'bg-slate-900 border-slate-800 text-slate-400'
+                      ? 'bg-[#26262f] border-[#424250] text-white'
+                      : 'bg-[#18181e] border-[#23232a] text-[#9696a4]'
                   }`}
                 >
                   {sz}px
@@ -601,7 +601,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                 type="button"
                 onClick={handleUndo}
                 disabled={historyLen === 0}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 disabled:opacity-30 cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[#d0d0d8] disabled:opacity-30 cursor-pointer"
                 title="Undo (Ctrl+Z)"
               >
                 <Undo2 className="w-3.5 h-3.5" />
@@ -610,7 +610,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                 type="button"
                 onClick={handleRedo}
                 disabled={redoLen === 0}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 disabled:opacity-30 cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[#d0d0d8] disabled:opacity-30 cursor-pointer"
                 title="Redo (Ctrl+Y)"
               >
                 <Redo2 className="w-3.5 h-3.5" />
@@ -620,8 +620,8 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
                 onClick={() => setShowGrid((v) => !v)}
                 className={`p-1.5 rounded-lg border cursor-pointer ${
                   showGrid
-                    ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                    : 'bg-slate-900 border-slate-700 text-slate-400'
+                    ? 'bg-[#25252e] border-[#444452] text-white'
+                    : 'bg-[#18181e] border-[#2c2c35] text-[#9696a4]'
                 }`}
                 title="Toggle Pixel Grid"
               >
@@ -642,7 +642,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
           <ColorPickerRow label="Pixel Color" value={color} onChange={setColor} />
 
           {/* Smart Actions: Auto-Outline + Starter Stamps */}
-          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-800/80">
+          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-[#222228]">
             <button
               type="button"
               onClick={handleAutoOutline}
@@ -650,13 +650,13 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
             >
               <Sparkles className="w-3.5 h-3.5" /> Auto-Outline 1px
             </button>
-            <span className="text-[10px] font-mono text-slate-500 ml-1">STAMP:</span>
+            <span className="text-[10px] font-mono text-[#727280] ml-1">STAMP:</span>
             {(['cross', 'star', 'heart', 'brackets'] as const).map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => stampTemplate(k)}
-                className="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-semibold capitalize text-slate-300 cursor-pointer"
+                className="px-2 py-1 rounded bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[10px] font-semibold capitalize text-[#d0d0d8] cursor-pointer"
               >
                 {k}
               </button>
@@ -664,7 +664,7 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
           </div>
 
           {/* Live Overlay Scaling & Blending */}
-          <div className="space-y-2 pt-2 border-t border-slate-800/80">
+          <div className="space-y-2 pt-2 border-t border-[#222228]">
             <SliderRow
               label="Pixel Crosshair Scale"
               value={config.image.scale}

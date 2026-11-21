@@ -108,40 +108,40 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
   const subTabs: Array<{ id: DesignerSubTab; label: string }> = [
     { id: 'geometry', label: 'Lines' },
     { id: 'dot-shapes', label: 'Dot & Shapes' },
-    { id: 'outline-image', label: 'Outline & Img' },
+    { id: 'outline-image', label: 'Outline' },
     { id: 'pixel-draw', label: 'Pixel Draw' },
-    { id: 'dynamics', label: 'Dynamics & ADS' },
-    { id: 'position-share', label: 'Offset & Export' },
+    { id: 'dynamics', label: 'Dynamics' },
+    { id: 'position-share', label: 'Position' },
   ];
 
   return (
     <div className="h-full flex flex-col lg:flex-row gap-4 p-4 overflow-hidden">
-      {/* LEFT COLUMN: Live Interactive Optics Viewport + Quick Action Bar */}
-      <div className="lg:w-[440px] xl:w-[490px] shrink-0 flex flex-col gap-3 overflow-y-auto pr-0.5">
+      {/* LEFT COLUMN: Live Viewport + Action Bar */}
+      <div className="lg:w-[430px] xl:w-[470px] shrink-0 flex flex-col gap-3 overflow-y-auto pr-0.5">
         {/* Editable Crosshair Name */}
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={activeConfig.name}
             onChange={(e) => updateActiveConfig((c) => ({ ...c, name: e.target.value }))}
-            className="flex-1 px-3 py-2 rounded-xl bg-[#0e1422] border border-slate-800 focus:border-cyan-400/70 focus:outline-none text-sm font-bold text-white tracking-wide"
+            className="flex-1 px-3 py-2 rounded-lg bg-[#141418] border border-[#25252d] focus:border-[#4b4b58] focus:outline-none text-sm font-medium text-[#f4f4f6]"
             placeholder="Crosshair name..."
           />
           <button
             type="button"
             onClick={() => saveCurrentAsProfile(undefined, !!activeProfileId)}
-            className="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-[0_0_16px_rgba(0,240,255,0.28)] transition cursor-pointer shrink-0"
+            className="px-3.5 py-2 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
             title={activeProfileId ? 'Update Active Profile' : 'Save New Profile'}
           >
             <Save className="w-3.5 h-3.5" />
-            <span>{activeProfileId ? 'Update' : t.saveProfile}</span>
+            <span>{activeProfileId ? 'Save' : t.saveProfile}</span>
           </button>
           {activeProfileId && (
             <button
               type="button"
               onClick={() => saveCurrentAsProfile(`${activeConfig.name} Copy`, false)}
-              className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-200 font-semibold text-xs transition cursor-pointer shrink-0"
-              title="Save as a brand-new profile copy"
+              className="px-2.5 py-2 rounded-lg bg-[#16161b] hover:bg-[#1e1e25] border border-[#26262e] text-[#c8c8d2] font-medium text-xs transition-colors cursor-pointer shrink-0"
+              title="Save as a new profile copy"
             >
               + New
             </button>
@@ -157,26 +157,26 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
         />
 
         {/* Quick Share / Import / Export Dock */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
           <button
             type="button"
             onClick={handleCopyShareCode}
-            className="py-2 px-2.5 rounded-xl bg-[#0e1422] hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-400/40 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="py-2 px-2 rounded-lg bg-[#141418] hover:bg-[#1c1c22] border border-[#23232a] text-xs font-medium text-[#d4d4dc] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-cyan-400" />}
-            <span>{copiedCode ? 'Copied!' : 'Share Code'}</span>
+            {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-[#8c8c9a]" />}
+            <span>{copiedCode ? 'Copied' : 'Share'}</span>
           </button>
           <button
             type="button"
             onClick={() => setShowImportBox((v) => !v)}
-            className={`py-2 px-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            className={`py-2 px-2 rounded-lg border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
               showImportBox
-                ? 'bg-cyan-500/15 border-cyan-400/50 text-cyan-200'
-                : 'bg-[#0e1422] hover:bg-slate-800/80 border-slate-800 text-slate-200'
+                ? 'bg-[#22222a] border-[#3c3c48] text-white'
+                : 'bg-[#141418] hover:bg-[#1c1c22] border-[#23232a] text-[#d4d4dc]'
             }`}
           >
-            <Code2 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Import Code</span>
+            <Code2 className="w-3.5 h-3.5 text-[#8c8c9a]" />
+            <span>Import</span>
           </button>
           <button
             type="button"
@@ -185,9 +185,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
               bumpStat((s) => ({ ...s, imagesExported: s.imagesExported + 1 }));
               pushToast('PNG Exported', `${activeConfig.name}.png downloaded.`, 'emerald');
             }}
-            className="py-2 px-2.5 rounded-xl bg-[#0e1422] hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-400/40 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="py-2 px-2 rounded-lg bg-[#141418] hover:bg-[#1c1c22] border border-[#23232a] text-xs font-medium text-[#d4d4dc] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <Download className="w-3.5 h-3.5 text-[#8c8c9a]" />
             <span>PNG</span>
           </button>
           <button
@@ -197,24 +197,24 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
               bumpStat((s) => ({ ...s, imagesExported: s.imagesExported + 1 }));
               pushToast('SVG Exported', `${activeConfig.name}.svg downloaded.`, 'emerald');
             }}
-            className="py-2 px-2.5 rounded-xl bg-[#0e1422] hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-400/40 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="py-2 px-2 rounded-lg bg-[#141418] hover:bg-[#1c1c22] border border-[#23232a] text-xs font-medium text-[#d4d4dc] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <FileCode2 className="w-3.5 h-3.5 text-emerald-400" />
+            <FileCode2 className="w-3.5 h-3.5 text-[#8c8c9a]" />
             <span>SVG</span>
           </button>
         </div>
 
         {/* Inline Share / Valorant Code Importer */}
         {showImportBox && (
-          <div className="rounded-xl bg-[#0e1422] border border-cyan-500/35 p-3 space-y-2">
-            <div className="text-[11px] font-semibold text-cyan-300 flex items-center justify-between">
-              <span>Import CX1 Share Code or Valorant Profile Code (0;P;...)</span>
+          <div className="rounded-lg bg-[#141418] border border-[#2d2d36] p-3 space-y-2">
+            <div className="text-[11px] font-medium text-[#b4b4c0] flex items-center justify-between">
+              <span>Paste CX1 or Valorant code (0;P;...)</span>
               <button
                 type="button"
                 onClick={() => setImportInput('0;P;c;5;h;0;f;0;0l;4;0o;2;0a;1;0f;0;1b;0')}
-                className="text-[10px] font-mono text-slate-400 hover:text-cyan-300 underline cursor-pointer"
+                className="text-[11px] text-[#8c8c9a] hover:text-white underline cursor-pointer"
               >
-                Try Sample Valorant Code
+                Sample
               </button>
             </div>
             <div className="flex gap-2">
@@ -222,13 +222,13 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 type="text"
                 value={importInput}
                 onChange={(e) => setImportInput(e.target.value)}
-                placeholder="Paste CX1-... or 0;P;..."
-                className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400"
+                placeholder="CX1-... or 0;P;..."
+                className="flex-1 px-2.5 py-1.5 rounded-md bg-[#0e0e11] border border-[#27272e] text-xs font-mono text-[#e4e4e8] focus:outline-none focus:border-[#52525e]"
               />
               <button
                 type="button"
                 onClick={handleImportCode}
-                className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs cursor-pointer"
+                className="px-3 py-1.5 rounded-md bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs cursor-pointer"
               >
                 Apply
               </button>
@@ -236,19 +236,18 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           </div>
         )}
 
-        {/* Quick Style Shortcuts */}
-        <div className="rounded-xl bg-[#0d121d] border border-slate-800/80 p-3 flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] font-mono uppercase text-slate-500 mr-1">Quick Morph:</span>
+        {/* Quick Presets Strip */}
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() =>
                 updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, enabled: true, tShape: !c.lines.tShape } }))
               }
-              className={`px-2 py-1 rounded text-[11px] font-semibold border transition cursor-pointer ${
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
                 activeConfig.lines.tShape
-                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'
+                  ? 'bg-[#25252e] border-[#3d3d4a] text-white'
+                  : 'bg-[#141418] border-[#23232a] text-[#9898a6] hover:text-white'
               }`}
             >
               T-Shape
@@ -261,13 +260,13 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                   lines: { ...c.lines, enabled: true, rotation: c.lines.rotation === 45 ? 0 : 45 },
                 }))
               }
-              className={`px-2 py-1 rounded text-[11px] font-semibold border transition cursor-pointer ${
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
                 activeConfig.lines.rotation === 45
-                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'
+                  ? 'bg-[#25252e] border-[#3d3d4a] text-white'
+                  : 'bg-[#141418] border-[#23232a] text-[#9898a6] hover:text-white'
               }`}
             >
-              X-Rotate 45°
+              45° X
             </button>
             <button
               type="button"
@@ -279,39 +278,43 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                   dot: { ...c.dot, enabled: true, size: 3 },
                 }))
               }
-              className="px-2 py-1 rounded text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-600 transition cursor-pointer"
+              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#141418] border border-[#23232a] text-[#9898a6] hover:text-white transition-colors cursor-pointer"
             >
-              Dot Only
+              Dot only
             </button>
           </div>
           <button
             type="button"
             onClick={() => setActiveConfig(createDefaultCrosshair())}
-            className="text-[11px] text-slate-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer"
+            className="text-[11px] text-[#787886] hover:text-[#f4f4f6] flex items-center gap-1 cursor-pointer transition-colors"
           >
-            <RotateCcw className="w-3 h-3" /> Reset Default
+            <RotateCcw className="w-3 h-3" /> Reset
           </button>
         </div>
       </div>
 
       {/* RIGHT COLUMN: Precision Controls Inspector */}
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        {/* Sub-tab Strip */}
-        <div className="grid grid-cols-6 gap-1 bg-[#0a0f19] border border-slate-800/90 rounded-xl p-1 mb-3 shrink-0">
-          {subTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setSubTab(tab.id)}
-              className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold text-center truncate transition cursor-pointer ${
-                subTab === tab.id
-                  ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Clean Flat Underline Sub-tab Bar */}
+        <div className="flex items-center gap-1 border-b border-[#222228] mb-3.5 shrink-0">
+          {subTabs.map((tab) => {
+            const active = subTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSubTab(tab.id)}
+                className={`px-3 py-2 text-xs font-medium transition-colors cursor-pointer relative whitespace-nowrap ${
+                  active ? 'text-[#f4f4f6]' : 'text-[#7e7e8c] hover:text-[#d4d4dc]'
+                }`}
+              >
+                {tab.label}
+                {active && (
+                  <span className="absolute left-1.5 right-1.5 bottom-[-1px] h-[2px] rounded-full bg-[#ff5526]" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Scrollable Controls Pane */}
@@ -328,8 +331,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                     onClick={() => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, enabled: !c.lines.enabled } }))}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
                       activeConfig.lines.enabled
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
+                        : 'bg-[#202027] text-[#9696a4]'
                     }`}
                   >
                     {activeConfig.lines.enabled ? 'Enabled' : 'Disabled'}
@@ -436,7 +439,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
 
                 {/* Individual arm toggles */}
                 <div className="flex items-center gap-2 pt-1 flex-wrap">
-                  <span className="text-[11px] text-slate-400 font-medium mr-1">Individual Arms:</span>
+                  <span className="text-[11px] text-[#9696a4] font-medium mr-1">Individual Arms:</span>
                   {(
                     [
                       ['showTop', 'Top'],
@@ -453,8 +456,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       }
                       className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition cursor-pointer ${
                         activeConfig.lines[key]
-                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                          : 'bg-slate-900 border-slate-800 text-slate-500'
+                          ? 'bg-[#25252e] border-[#444452] text-white'
+                          : 'bg-[#18181e] border-[#23232a] text-[#727280]'
                       }`}
                     >
                       {label}
@@ -481,8 +484,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                     }
                     className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
                       activeConfig.outerLines.enabled
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
+                        : 'bg-[#202027] text-[#9696a4]'
                     }`}
                   >
                     {activeConfig.outerLines.enabled ? 'Enabled' : 'Disabled'}
@@ -575,8 +578,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                     onClick={() => updateActiveConfig((c) => ({ ...c, dot: { ...c.dot, enabled: !c.dot.enabled } }))}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
                       activeConfig.dot.enabled
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
+                        : 'bg-[#202027] text-[#9696a4]'
                     }`}
                   >
                     {activeConfig.dot.enabled ? 'Enabled' : 'Disabled'}
@@ -591,8 +594,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       onClick={() => updateActiveConfig((c) => ({ ...c, dot: { ...c.dot, shape, enabled: true } }))}
                       className={`py-2 rounded-lg text-xs font-semibold capitalize border transition cursor-pointer ${
                         activeConfig.dot.shape === shape && activeConfig.dot.enabled
-                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-[#25252e] border-[#444452] text-white'
+                          : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                       }`}
                     >
                       {shape}
@@ -662,8 +665,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                     onClick={() => updateActiveConfig((c) => ({ ...c, ring: { ...c.ring, enabled: !c.ring.enabled } }))}
                     className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
                       activeConfig.ring.enabled
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
+                        : 'bg-[#202027] text-[#9696a4]'
                     }`}
                   >
                     {activeConfig.ring.enabled ? 'Enabled' : 'Disabled'}
@@ -687,8 +690,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       onClick={() => updateActiveConfig((c) => ({ ...c, ring: { ...c.ring, style, enabled: true } }))}
                       className={`py-2 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
                         activeConfig.ring.style === style && activeConfig.ring.enabled
-                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-[#25252e] border-[#444452] text-white'
+                          : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                       }`}
                     >
                       {label}
@@ -813,7 +816,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 )}
 
                 {activeConfig.outline.glowEnabled && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2 border-t border-slate-800/80">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2 border-t border-[#222228]">
                     <SliderRow
                       label="Glow Blur Radius"
                       value={activeConfig.outline.glowBlur}
@@ -836,12 +839,12 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 title="Custom Image / Animated Sprite Upload"
                 badge="PNG / SVG / WEBP / GIF"
               >
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#9696a4]">
                   Upload any transparent PNG, SVG, WebP, or GIF image to render directly on your overlay. You can use it standalone or blended underneath your vector layers.
                 </p>
 
                 <div className="flex items-center gap-3 flex-wrap">
-                  <label className="px-4 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/45 text-cyan-200 text-xs font-bold flex items-center gap-2 cursor-pointer transition">
+                  <label className="px-4 py-2 rounded-xl bg-[#1e1e25] hover:bg-[#272730] border border-[#343440] text-[#f4f4f6] text-xs font-bold flex items-center gap-2 cursor-pointer transition">
                     <Upload className="w-4 h-4" />
                     <span>{activeConfig.image.fileName ? `Replace (${activeConfig.image.fileName})` : 'Upload Custom Image'}</span>
                     <input type="file" accept="image/png,image/svg+xml,image/webp,image/gif" className="hidden" onChange={handleCustomImageUpload} />
@@ -864,7 +867,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 </div>
 
                 {activeConfig.image.dataUrl && (
-                  <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                  <div className="space-y-3 pt-2 border-t border-[#222228]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <ToggleRow
                         label="Show Uploaded Image"
@@ -958,7 +961,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       className={`py-2 px-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
                         activeConfig.animation.firingType === type && activeConfig.animation.firingEnabled
                           ? 'bg-rose-500/20 border-rose-400/55 text-rose-200'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                       }`}
                     >
                       {label}
@@ -1065,7 +1068,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       className={`py-2 px-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
                         activeConfig.animation.adsAction === act
                           ? 'bg-amber-500/20 border-amber-400/55 text-amber-200'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                       }`}
                     >
                       {label}
@@ -1075,7 +1078,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-medium text-slate-400">ADS Trigger Input</label>
+                    <label className="text-[11px] font-medium text-[#9696a4]">ADS Trigger Input</label>
                     <select
                       value={activeConfig.animation.adsTrigger}
                       onChange={(e) =>
@@ -1084,7 +1087,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                           animation: { ...c.animation, adsTrigger: e.target.value as AdsTrigger },
                         }))
                       }
-                      className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700/80 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                      className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2a2a33] text-xs text-[#ececf0] focus:outline-none focus:border-[#525260]"
                     >
                       <option value="rmb_or_lt">Right-Click OR Controller Left Trigger (Recommended)</option>
                       <option value="rmb">Mouse Right-Click Only (RMB)</option>
@@ -1097,7 +1100,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-medium text-slate-400">Trigger Mode</label>
+                    <label className="text-[11px] font-medium text-[#9696a4]">Trigger Mode</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(['hold', 'toggle'] as const).map((m) => (
                         <button
@@ -1108,8 +1111,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                           }
                           className={`py-2 rounded-lg text-xs font-semibold capitalize border cursor-pointer ${
                             activeConfig.animation.adsMode === m
-                              ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                              : 'bg-slate-900 border-slate-800 text-slate-400'
+                              ? 'bg-[#25252e] border-[#444452] text-white'
+                              : 'bg-[#18181e] border-[#23232a] text-[#9696a4]'
                           }`}
                         >
                           {m} ADS
@@ -1159,7 +1162,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
 
                   {activeConfig.animation.adsAction === 'switch' && (
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-slate-400">Secondary ADS Profile</label>
+                      <label className="text-[11px] font-medium text-[#9696a4]">Secondary ADS Profile</label>
                       <select
                         value={activeConfig.animation.adsSecondaryProfileId ?? ''}
                         onChange={(e) =>
@@ -1168,7 +1171,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                             animation: { ...c.animation, adsSecondaryProfileId: e.target.value || null },
                           }))
                         }
-                        className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700/80 text-xs text-slate-200"
+                        className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2a2a33] text-xs text-[#ececf0]"
                       >
                         <option value="">-- Choose a Saved Profile --</option>
                         {profiles.map((p) => (
@@ -1206,9 +1209,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                   />
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/80 space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="pt-2 border-t border-[#222228] space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#d0d0d8]">
+                    <Sparkles className="w-3.5 h-3.5 text-[#a1a1ad]" />
                     <span>Continuous Idle Animation</span>
                   </div>
                   <div className="grid grid-cols-5 gap-1.5">
@@ -1229,8 +1232,8 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                         }
                         className={`py-2 px-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
                           activeConfig.animation.idleType === type
-                            ? 'bg-cyan-500/20 border-cyan-400/55 text-cyan-200'
-                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                            ? 'bg-[#25252e] border-[#444452] text-white'
+                            : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
                         }`}
                       >
                         {label}
@@ -1272,9 +1275,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {subTab === 'position-share' && (
             <>
               <SectionCard title="Screen Position Offset & Optical Scale">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#9696a4]">
                   Fine-tune pixel alignment for games with non-centered third-person or weapon-bob hipfire cameras. Tip: You can also nudge 1px live in-game using{' '}
-                  <span className="font-mono text-cyan-300">Alt + Arrow Keys</span>!
+                  <span className="font-mono text-[#f4f4f6]">Alt + Arrow Keys</span>!
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1321,14 +1324,14 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                     onClick={() =>
                       updateActiveConfig((c) => ({ ...c, position: { ...c.position, offsetX: 0, offsetY: 0, scale: 1 } }))
                     }
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] cursor-pointer"
                   >
                     Center Exactly (0, 0)
                   </button>
                   <button
                     type="button"
                     onClick={() => store.setActiveTab('monitors')}
-                    className="px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-xs font-semibold text-cyan-200 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-[#1e1e25] hover:bg-[#272730] border border-[#343440] text-xs font-medium text-[#f4f4f6] cursor-pointer"
                   >
                     Open Visual Multi-Monitor Map →
                   </button>
@@ -1337,18 +1340,18 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
 
               <SectionCard title="Instant Share Code & Asset Export">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-medium text-slate-400">Your Unique Share Code (CX1)</label>
+                  <label className="text-[11px] font-medium text-[#9696a4]">Your Unique Share Code (CX1)</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       readOnly
                       value={encodeShareCode(activeConfig)}
-                      className="flex-1 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-cyan-300 select-all"
+                      className="flex-1 px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#23232a] text-[11px] font-mono text-[#f4f4f6] select-all"
                     />
                     <button
                       type="button"
                       onClick={handleCopyShareCode}
-                      className="px-3.5 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs cursor-pointer"
+                      className="px-3.5 py-2 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-bold text-xs cursor-pointer"
                     >
                       Copy
                     </button>
@@ -1363,9 +1366,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       bumpStat((s) => ({ ...s, imagesExported: s.imagesExported + 1 }));
                       pushToast('PNG Exported (1x)', `${activeConfig.name}.png`, 'emerald');
                     }}
-                    className="py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="py-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <ImageIcon className="w-3.5 h-3.5 text-cyan-400" /> PNG 1x (Exact)
+                    <ImageIcon className="w-3.5 h-3.5 text-[#a1a1ad]" /> PNG 1x (Exact)
                   </button>
                   <button
                     type="button"
@@ -1374,7 +1377,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       bumpStat((s) => ({ ...s, imagesExported: s.imagesExported + 1 }));
                       pushToast('PNG Exported (3x HD)', `${activeConfig.name}.png`, 'emerald');
                     }}
-                    className="py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="py-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <Download className="w-3.5 h-3.5 text-emerald-400" /> PNG 3x HD
                   </button>
@@ -1385,7 +1388,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                       bumpStat((s) => ({ ...s, imagesExported: s.imagesExported + 1 }));
                       pushToast('SVG Exported', `${activeConfig.name}.svg`, 'emerald');
                     }}
-                    className="py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-center gap-1.5"
+                    className="py-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <FileCode2 className="w-3.5 h-3.5 text-amber-400" /> Lossless SVG
                   </button>

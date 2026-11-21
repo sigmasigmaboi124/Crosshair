@@ -59,13 +59,13 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      <div className="rounded-2xl bg-[#0d121d] border border-slate-800/90 p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
           <h2 className="text-base font-black text-white flex items-center gap-2">
-            <Gamepad2 className="w-4 h-4 text-cyan-400" />
+            <Gamepad2 className="w-4 h-4 text-[#a1a1ad]" />
             <span>Global Hotkeys, Mouse, Keyboard & XInput Controller</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#9696a4] mt-0.5">
             All inputs are monitored passively via read-only Windows APIs (<span className="font-mono text-emerald-300">GetAsyncKeyState</span> &{' '}
             <span className="font-mono text-emerald-300">XInputGetState</span>) with zero global hooks and 0.0ms added input latency.
           </p>
@@ -80,7 +80,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
       {/* Global Hotkey Customization */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard title="Master Overlay Toggle Shortcut" badge={hk.label}>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#9696a4]">
             Instantly show or hide your crosshair overlay inside any game without Alt-Tabbing.
           </p>
           <div className="flex items-center gap-2 flex-wrap">
@@ -97,8 +97,8 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
                 onClick={() => updateHotkey({ [mod]: !hk[mod] })}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
                   hk[mod]
-                    ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                    : 'bg-slate-900 border-slate-800 text-slate-400'
+                    ? 'bg-[#25252e] border-[#444452] text-white'
+                    : 'bg-[#18181e] border-[#23232a] text-[#9696a4]'
                 }`}
               >
                 {lbl}
@@ -108,7 +108,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
             <select
               value={hk.vk}
               onChange={(e) => updateHotkey({ vk: Number(e.target.value) })}
-              className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono text-cyan-300"
+              className="px-3 py-1.5 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs font-mono text-[#f4f4f6]"
             >
               {KEY_OPTIONS.map((k) => (
                 <option key={k.vk} value={k.vk}>
@@ -118,8 +118,8 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
             </select>
           </div>
 
-          <div className="pt-3 border-t border-slate-800/80 space-y-1.5">
-            <label className="text-[11px] text-slate-400">Optional Custom ADS Keyboard Key (When ADS Trigger = Custom)</label>
+          <div className="pt-3 border-t border-[#222228] space-y-1.5">
+            <label className="text-[11px] text-[#9696a4]">Optional Custom ADS Keyboard Key (When ADS Trigger = Custom)</label>
             <select
               value={settings.adsCustomKey.vk}
               onChange={(e) => {
@@ -127,7 +127,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
                 const lbl = ADS_CUSTOM_KEYS.find((k) => k.vk === vk)?.label ?? 'None';
                 setSettings((s) => ({ ...s, adsCustomKey: { vk, label: lbl } }));
               }}
-              className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200"
+              className="w-full px-3 py-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs font-mono text-[#ececf0]"
             >
               {ADS_CUSTOM_KEYS.map((k) => (
                 <option key={k.vk} value={k.vk}>
@@ -149,10 +149,10 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
             ].map(([keys, desc]) => (
               <div
                 key={desc}
-                className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/75 border border-slate-800/80"
+                className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#0e0e11] border border-[#222228]"
               >
-                <span className="text-slate-300">{desc}</span>
-                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[#d0d0d8]">{desc}</span>
+                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39]">
                   {keys}
                 </span>
               </div>
@@ -163,7 +163,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
 
       {/* Live Passive Input Telemetry Visualizer */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SectionCard title="Mouse Buttons (Live)" rightSlot={<Mouse className="w-4 h-4 text-cyan-400" />}>
+        <SectionCard title="Mouse Buttons (Live)" rightSlot={<Mouse className="w-4 h-4 text-[#a1a1ad]" />}>
           <div className="grid grid-cols-2 gap-2 font-mono text-xs">
             {[
               ['LMB (Fire)', liveInput.lmb, 'rose'],
@@ -180,8 +180,8 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
                       ? 'bg-rose-500/25 border-rose-400 text-rose-100'
                       : col === 'amber'
                       ? 'bg-amber-500/25 border-amber-400 text-amber-100'
-                      : 'bg-cyan-500/25 border-cyan-400 text-cyan-100'
-                    : 'bg-slate-950/70 border-slate-800 text-slate-500'
+                      : 'bg-white/15 border-white/40 text-white'
+                    : 'bg-[#0e0e11] border-[#23232a] text-[#727280]'
                 }`}
               >
                 {lbl}
@@ -190,7 +190,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Movement Keys (Live)" rightSlot={<Keyboard className="w-4 h-4 text-cyan-400" />}>
+        <SectionCard title="Movement Keys (Live)" rightSlot={<Keyboard className="w-4 h-4 text-[#a1a1ad]" />}>
           <div className="grid grid-cols-2 gap-2 font-mono text-xs">
             {[
               ['WASD Move', liveInput.moving],
@@ -202,8 +202,8 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
                 key={String(lbl)}
                 className={`px-3 py-2 rounded-xl border text-center transition ${
                   active
-                    ? 'bg-cyan-500/25 border-cyan-400 text-cyan-100'
-                    : 'bg-slate-950/70 border-slate-800 text-slate-500'
+                    ? 'bg-white/15 border-white/40 text-white'
+                    : 'bg-[#0e0e11] border-[#23232a] text-[#727280]'
                 }`}
               >
                 {lbl}
@@ -219,10 +219,10 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
           <div className="space-y-3 text-xs">
             <div>
               <div className="flex justify-between font-mono text-[11px] mb-1">
-                <span className="text-slate-400">Left Trigger (LT — ADS)</span>
+                <span className="text-[#9696a4]">Left Trigger (LT — ADS)</span>
                 <span className="text-amber-300">{Math.round((liveInput.controller.lt / 255) * 100)}%</span>
               </div>
-              <div className="h-2.5 rounded-full bg-slate-950 border border-slate-800 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-[#0e0e11] border border-[#23232a] overflow-hidden">
                 <div
                   className="h-full bg-amber-400 transition-all duration-75"
                   style={{ width: `${(liveInput.controller.lt / 255) * 100}%` }}
@@ -232,10 +232,10 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
 
             <div>
               <div className="flex justify-between font-mono text-[11px] mb-1">
-                <span className="text-slate-400">Right Trigger (RT — Fire)</span>
+                <span className="text-[#9696a4]">Right Trigger (RT — Fire)</span>
                 <span className="text-rose-300">{Math.round((liveInput.controller.rt / 255) * 100)}%</span>
               </div>
-              <div className="h-2.5 rounded-full bg-slate-950 border border-slate-800 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-[#0e0e11] border border-[#23232a] overflow-hidden">
                 <div
                   className="h-full bg-rose-400 transition-all duration-75"
                   style={{ width: `${(liveInput.controller.rt / 255) * 100}%` }}
@@ -243,7 +243,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
               </div>
             </div>
 
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[11px] text-[#727280]">
               {liveInput.controller.connected
                 ? 'Xbox / XInput gamepad detected automatically — LT ADS and RT Firing animations are live.'
                 : 'Plug in any Xbox / XInput PC controller to enable automatic trigger & stick bloom.'}

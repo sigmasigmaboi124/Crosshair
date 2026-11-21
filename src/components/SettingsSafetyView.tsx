@@ -69,25 +69,25 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
       {/* Hero Safety Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-950/50 via-[#0d1620] to-[#0b1322] border border-emerald-500/40 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hud-frame">
+      <div className="rounded-2xl bg-[#141418] border border-[#2a2a33] p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-400/50 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center shrink-0">
             <ShieldCheck className="w-6 h-6 text-emerald-300" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-black text-white">Anti-Cheat Safe External Overlay Architecture</h2>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
                 ALL 5 INVARIANTS VERIFIED
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs text-[#d0d0d8] mt-1 max-w-3xl leading-relaxed">
               Built on the same clean external Windows Desktop Window Manager (DWM) principles as Steam crosshair utilities. It behaves strictly as a separate click-through desktop window and never interacts with game files, memory, shaders, or input streams.
             </p>
           </div>
         </div>
         <div className="text-right font-mono text-[11px] shrink-0">
-          <div className="text-slate-400">WINBRIDGE STATUS</div>
+          <div className="text-[#9696a4]">WINBRIDGE STATUS</div>
           <div className={safetyAudit.bridgeConnected ? 'text-emerald-300 font-bold' : 'text-amber-300 font-bold'}>
             {safetyAudit.bridgeConnected ? '● CONNECTED (AUDITED)' : '○ STANDBY / WEB MODE'}
           </div>
@@ -100,7 +100,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
           {auditChecks.map((chk) => (
             <div
               key={chk.label}
-              className="rounded-xl bg-slate-950/80 border border-emerald-500/25 p-3 space-y-1"
+              className="rounded-xl bg-[#0e0e11] border border-[#24242c] p-3 space-y-1"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
@@ -111,7 +111,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   PASS
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">{chk.detail}</p>
+              <p className="text-[11px] text-[#9696a4] leading-relaxed">{chk.detail}</p>
             </div>
           ))}
         </div>
@@ -133,9 +133,9 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
             <button
               type="button"
               onClick={() => openRepoUrl(updaterState.repoUrl)}
-              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[11px] font-mono text-[#d0d0d8] hover:text-white flex items-center gap-1 cursor-pointer"
             >
-              <GitBranch className="w-3 h-3 text-cyan-400" />
+              <GitBranch className="w-3 h-3 text-[#a1a1ad]" />
               <span>{updaterState.repoOwner}/{updaterState.repoName}</span>
               <ExternalLink className="w-3 h-3 opacity-70" />
             </button>
@@ -143,7 +143,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
               type="button"
               onClick={() => checkForUpdates()}
               disabled={updaterState.status === 'checking' || updaterState.status === 'downloading' || updaterState.status === 'building-commit'}
-              className="px-3 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-[#f4f4f6] hover:bg-white disabled:opacity-45 text-[#0c0c0e] font-bold text-[11px] flex items-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${updaterState.status === 'checking' ? 'animate-spin' : ''}`} />
               <span>{updaterState.status === 'checking' ? 'Checking...' : 'Check Now'}</span>
@@ -155,7 +155,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
           {/* Left: Channel & Auto-Update Controls */}
           <div className="lg:col-span-6 space-y-3">
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-300">Update Channel</span>
+              <span className="text-[11px] font-semibold text-[#d0d0d8]">Update Channel</span>
               <div className="grid grid-cols-3 gap-1.5">
                 {(
                   [
@@ -172,8 +172,8 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                     }
                     className={`py-2 px-2 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
                       settings.updater.channel === ch
-                        ? 'bg-cyan-500/20 border-cyan-400/55 text-cyan-200'
-                        : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-[#25252e] border-[#444452] text-white'
+                        : 'bg-[#0e0e11] border-[#23232a] text-[#9696a4] hover:text-white'
                     }`}
                   >
                     {lbl}
@@ -198,8 +198,8 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
               />
             </div>
 
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/75 border border-slate-800 text-xs">
-              <span className="text-slate-400">Background Check Interval</span>
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#0e0e11] border border-[#23232a] text-xs">
+              <span className="text-[#9696a4]">Background Check Interval</span>
               <select
                 value={settings.updater.checkIntervalMinutes}
                 onChange={(e) =>
@@ -208,7 +208,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                     updater: { ...s.updater, checkIntervalMinutes: Number(e.target.value) },
                   }))
                 }
-                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-cyan-300"
+                className="px-2.5 py-1 rounded-lg bg-[#18181e] border border-[#2c2c35] text-xs font-mono text-[#f4f4f6]"
               >
                 <option value={15}>Every 15 min</option>
                 <option value={30}>Every 30 min</option>
@@ -219,7 +219,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
 
           {/* Right: Live Status, Download Progress & Recent Commits / Release */}
           <div className="lg:col-span-6 space-y-3">
-            <div className="rounded-xl bg-slate-950/85 border border-slate-800 p-3 space-y-2.5">
+            <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 space-y-2.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span
@@ -230,7 +230,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                         ? 'bg-amber-400 animate-pulse'
                         : updaterState.status === 'error'
                         ? 'bg-rose-400'
-                        : 'bg-cyan-400'
+                        : 'bg-[#e4e4e8]'
                     }`}
                   />
                   <span className="text-xs font-bold text-white uppercase tracking-wide">
@@ -250,7 +250,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                     {updaterState.status === 'error' && 'Update Check Issue'}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500">
+                <span className="text-[10px] font-mono text-[#727280]">
                   {updaterState.isPackaged ? 'INSTALLED APP' : updaterState.hasLocalGit ? 'GIT WORKSPACE' : 'DEV BUILD'}
                 </span>
               </div>
@@ -263,13 +263,13 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
 
               {updaterState.status === 'downloading' && updaterState.downloadProgress && (
                 <div className="space-y-1">
-                  <div className="h-2 rounded-full bg-slate-900 overflow-hidden">
+                  <div className="h-2 rounded-full bg-[#18181e] overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all"
                       style={{ width: `${updaterState.downloadProgress.percent}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <div className="flex justify-between text-[10px] font-mono text-[#9696a4]">
                     <span>{updaterState.downloadProgress.percent}%</span>
                     <span>{(updaterState.downloadProgress.bytesPerSecond / (1024 * 1024)).toFixed(2)} MB/s</span>
                   </div>
@@ -282,7 +282,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => installUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <RotateCw className="w-3.5 h-3.5" /> Restart & Install Update
                   </button>
@@ -292,7 +292,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => downloadUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" /> Download & Install Binary
                   </button>
@@ -302,7 +302,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => pullCommitUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <GitCommitHorizontal className="w-3.5 h-3.5" /> Pull Commit, Rebuild & Relaunch
                   </button>
@@ -312,7 +312,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => openRepoUrl(updaterState.latestRelease?.htmlUrl)}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-cyan-300 flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[11px] font-mono text-[#f4f4f6] flex items-center gap-1 cursor-pointer"
                   >
                     <Tag className="w-3 h-3" /> {updaterState.latestRelease.tag}
                   </button>
@@ -320,8 +320,8 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
               </div>
 
               {/* Latest Commits Feed */}
-              <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+              <div className="pt-2 border-t border-[#222228] space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#727280]">
                   <span>LATEST COMMITS ({updaterState.branch})</span>
                   <span>
                     {updaterState.lastCheckedAt
@@ -330,8 +330,8 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   </span>
                 </div>
                 {updaterState.recentCommits.length === 0 ? (
-                  <div className="text-[11px] text-slate-500">
-                    No commits published on <span className="font-mono text-slate-400">{updaterState.repoOwner}/{updaterState.repoName}</span> yet. Once pushed, new commits and releases appear here automatically.
+                  <div className="text-[11px] text-[#727280]">
+                    No commits published on <span className="font-mono text-[#9696a4]">{updaterState.repoOwner}/{updaterState.repoName}</span> yet. Once pushed, new commits and releases appear here automatically.
                   </div>
                 ) : (
                   <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
@@ -340,13 +340,13 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                         key={c.sha}
                         type="button"
                         onClick={() => openRepoUrl(c.htmlUrl)}
-                        className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg bg-slate-900/70 hover:bg-slate-800 text-left text-[11px] transition cursor-pointer"
+                        className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg bg-[#17171c] hover:bg-[#222229] text-left text-[11px] transition cursor-pointer"
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="font-mono text-cyan-400 shrink-0">{c.shortSha}</span>
-                          <span className="text-slate-200 truncate">{c.message}</span>
+                          <span className="font-mono text-[#a1a1ad] shrink-0">{c.shortSha}</span>
+                          <span className="text-[#ececf0] truncate">{c.message}</span>
                         </div>
-                        <span className="text-[10px] font-mono text-slate-500 shrink-0">{c.author}</span>
+                        <span className="text-[10px] font-mono text-[#727280] shrink-0">{c.author}</span>
                       </button>
                     ))}
                   </div>
@@ -359,7 +359,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
 
       {/* Operating Modes & Fullscreen Guide */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionCard title="Safety Mode & Desktop Behavior" rightSlot={<SlidersHorizontal className="w-4 h-4 text-cyan-400" />}>
+        <SectionCard title="Safety Mode & Desktop Behavior" rightSlot={<SlidersHorizontal className="w-4 h-4 text-[#a1a1ad]" />}>
           <div className="space-y-2">
             <ToggleRow
               label="Ultra-Strict Static Mode (Maximum Minimalism)"
@@ -393,14 +393,14 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
           </div>
         </SectionCard>
 
-        <SectionCard title="Universal Game Compatibility & Fullscreen Guide" rightSlot={<MonitorPlay className="w-4 h-4 text-cyan-400" />}>
-          <div className="space-y-2.5 text-xs text-slate-300 leading-relaxed">
+        <SectionCard title="Universal Game Compatibility & Fullscreen Guide" rightSlot={<MonitorPlay className="w-4 h-4 text-[#a1a1ad]" />}>
+          <div className="space-y-2.5 text-xs text-[#d0d0d8] leading-relaxed">
             <p>
               To show your crosshair smoothly over <strong>every PC game</strong> with <strong>zero DLL injection</strong> and <strong>zero added input latency</strong>:
             </p>
-            <ol className="list-decimal list-inside space-y-1.5 text-slate-300">
+            <ol className="list-decimal list-inside space-y-1.5 text-[#d0d0d8]">
               <li>
-                Set your game’s Display Mode to <strong className="text-cyan-300">Windowed Fullscreen / Borderless</strong> (DX12 & Vulkan games already use modern Flip-Model presentation here!).
+                Set your game’s Display Mode to <strong className="text-[#f4f4f6]">Windowed Fullscreen / Borderless</strong> (DX12 & Vulkan games already use modern Flip-Model presentation here!).
               </li>
               <li>
                 On Windows 11, ensure <strong className="text-emerald-300">“Optimizations for windowed games”</strong> is ON — this upgrades DX10/DX11 borderless games to native Exclusive-Fullscreen latency while keeping external overlays visible.
@@ -416,7 +416,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                 if (api) api.openWindowsGraphicsSettings();
                 else pushToast('Desktop Feature', 'Open Windows Settings → System → Display → Graphics.', 'cyan');
               }}
-              className="mt-1 px-4 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/45 text-cyan-200 font-bold text-xs inline-flex items-center gap-2 cursor-pointer transition"
+              className="mt-1 px-4 py-2 rounded-xl bg-[#1e1e25] hover:bg-[#272730] border border-[#343440] text-[#f4f4f6] font-bold text-xs inline-flex items-center gap-2 cursor-pointer transition"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Open Windows Display Graphics Settings (1-Click)
@@ -426,7 +426,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
       </div>
 
       {/* Multi-Language Localization Picker (12 Languages) */}
-      <SectionCard title="Interface Language (12 Languages)" rightSlot={<Globe className="w-4 h-4 text-cyan-400" />}>
+      <SectionCard title="Interface Language (12 Languages)" rightSlot={<Globe className="w-4 h-4 text-[#a1a1ad]" />}>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {SUPPORTED_LANGUAGES.map((lang) => {
             const active = settings.language === lang.code;
@@ -440,12 +440,12 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                 }}
                 className={`px-3 py-2 rounded-xl border text-left transition cursor-pointer ${
                   active
-                    ? 'bg-cyan-500/20 border-cyan-400/60 text-cyan-100'
-                    : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-600'
+                    ? 'bg-[#25252e] border-[#444452] text-white'
+                    : 'bg-[#0e0e11] border-[#23232a] text-[#d0d0d8] hover:border-[#3b3b47]'
                 }`}
               >
                 <div className="text-xs font-bold">{lang.nativeName}</div>
-                <div className="text-[10px] text-slate-500">{lang.name}</div>
+                <div className="text-[10px] text-[#727280]">{lang.name}</div>
               </button>
             );
           })}

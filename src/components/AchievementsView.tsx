@@ -9,9 +9,9 @@ interface AchievementsViewProps {
 
 const TIER_STYLES = {
   bronze: 'text-amber-500 border-amber-600/40 bg-amber-500/10',
-  silver: 'text-slate-200 border-slate-400/40 bg-slate-400/10',
+  silver: 'text-[#ececf0] border-slate-400/40 bg-slate-400/10',
   gold: 'text-yellow-300 border-yellow-400/50 bg-yellow-500/15',
-  platinum: 'text-cyan-200 border-cyan-400/60 bg-cyan-500/20',
+  platinum: 'text-[#e4e4e8] border-white/35 bg-cyan-500/20',
 };
 
 export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => {
@@ -42,9 +42,9 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
       {/* Rank & XP Hero Card */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#0e1524] via-[#101829] to-[#0c1a24] border border-cyan-500/30 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hud-frame">
+      <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-400/50 flex items-center justify-center shadow-[0_0_24px_rgba(255,184,0,0.2)]">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-400/50 flex items-center justify-center">
             <Award className="w-7 h-7 text-amber-300" />
           </div>
           <div>
@@ -52,7 +52,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
               <Sparkles className="w-3 h-3" /> OPERATOR PROGRESSION
             </div>
             <h2 className="text-xl font-black text-white mt-0.5">{operatorRank}</h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#9696a4]">
               {achievements.unlockedIds.length} of {ACHIEVEMENTS.length} achievements unlocked
             </p>
           </div>
@@ -60,14 +60,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
 
         <div className="md:w-72 space-y-1.5">
           <div className="flex justify-between text-xs font-mono">
-            <span className="text-slate-400">TOTAL XP</span>
-            <span className="text-cyan-300 font-bold">
+            <span className="text-[#9696a4]">TOTAL XP</span>
+            <span className="text-[#f4f4f6] font-bold">
               {totalXp} / {maxXp} XP
             </span>
           </div>
-          <div className="h-2.5 rounded-full bg-slate-950 border border-slate-800 overflow-hidden">
+          <div className="h-2.5 rounded-full bg-[#0e0e11] border border-[#23232a] overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300 transition-all duration-500"
+              className="h-full bg-[#f4f4f6] transition-all duration-500"
               style={{ width: `${Math.round((totalXp / Math.max(1, maxXp)) * 100)}%` }}
             />
           </div>
@@ -83,8 +83,8 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
             onClick={() => setCatFilter(c)}
             className={`px-3 py-1 rounded-full text-xs font-semibold border transition cursor-pointer ${
               catFilter === c
-                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                : 'bg-[#0d121d] border-slate-800 text-slate-400 hover:text-white'
+                ? 'bg-[#25252e] border-[#444452] text-white'
+                : 'bg-[#141418] border-[#23232a] text-[#9696a4] hover:text-white'
             }`}
           >
             {c}
@@ -104,8 +104,8 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
               key={def.id}
               className={`rounded-2xl p-4 border flex flex-col justify-between gap-3 transition ${
                 unlocked
-                  ? 'bg-[#0e1624] border-emerald-400/45 shadow-[0_0_16px_rgba(16,245,155,0.08)]'
-                  : 'bg-[#0b1019] border-slate-800/80 opacity-85'
+                  ? 'bg-[#17171d] border-emerald-500/35'
+                  : 'bg-[#111115] border-[#222228] opacity-85'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -113,15 +113,15 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
                       unlocked
-                        ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300'
-                        : 'bg-slate-900 border-slate-800 text-slate-600'
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                        : 'bg-[#18181e] border-[#23232a] text-slate-600'
                     }`}
                   >
                     {unlocked ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-white">{def.title}</h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{def.description}</p>
+                    <p className="text-[11px] text-[#9696a4] mt-0.5 leading-snug">{def.description}</p>
                   </div>
                 </div>
                 <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border shrink-0 ${TIER_STYLES[def.tier]}`}>
@@ -130,15 +130,15 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
               </div>
 
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#9696a4]">
                   <span>{def.category}</span>
                   <span>
                     {current.toLocaleString()} / {def.target.toLocaleString()} ({pct}%)
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-slate-950 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[#0e0e11] overflow-hidden">
                   <div
-                    className={`h-full transition-all ${unlocked ? 'bg-emerald-400' : 'bg-cyan-500/70'}`}
+                    className={`h-full transition-all ${unlocked ? 'bg-emerald-400' : 'bg-[#e4e4e8]'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>

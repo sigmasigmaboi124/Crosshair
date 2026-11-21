@@ -338,7 +338,7 @@ function createMainWindow(): void {
     minWidth: 1080,
     minHeight: 700,
     frame: false,
-    backgroundColor: '#090b10',
+    backgroundColor: '#0c0c0e',
     icon: getAppIcon(),
     show: false,
     webPreferences: {

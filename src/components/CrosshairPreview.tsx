@@ -187,29 +187,29 @@ export const CrosshairPreview: React.FC<CrosshairPreviewProps> = ({
   const backdropStyle: React.CSSProperties = (() => {
     switch (backdrop) {
       case 'tactical':
-        return { background: 'radial-gradient(circle at 50% 40%, #1c2436 0%, #0b0f18 75%)' };
+        return { background: '#18181d' };
       case 'desert':
-        return { background: 'linear-gradient(180deg, #9bd3f5 0%, #d8e7ef 46%, #d9b88c 47%, #a67f52 100%)' };
+        return { background: 'linear-gradient(180deg, #95bfd9 0%, #c8d6df 46%, #c8ac85 47%, #9b7a53 100%)' };
       case 'snow':
-        return { background: 'linear-gradient(180deg, #e2e8f0 0%, #f8fafc 55%, #cbd5e1 100%)' };
+        return { background: 'linear-gradient(180deg, #e5e7eb 0%, #f4f4f6 55%, #d4d4dc 100%)' };
       case 'neon':
-        return { background: 'radial-gradient(circle at 50% 50%, #3b0764 0%, #090314 75%)' };
+        return { background: '#1c1129' };
       case 'forest':
-        return { background: 'linear-gradient(180deg, #1d3b2a 0%, #2d4f38 50%, #14261a 100%)' };
+        return { background: 'linear-gradient(180deg, #21372a 0%, #2c4736 50%, #18271e 100%)' };
       case 'alpha':
         return {
           backgroundImage:
-            'linear-gradient(45deg, #1a202c 25%, transparent 25%), linear-gradient(-45deg, #1a202c 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a202c 75%), linear-gradient(-45deg, transparent 75%, #1a202c 75%)',
-          backgroundSize: '20px 20px',
-          backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-          backgroundColor: '#111622',
+            'linear-gradient(45deg, #1f1f25 25%, transparent 25%), linear-gradient(-45deg, #1f1f25 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1f1f25 75%), linear-gradient(-45deg, transparent 75%, #1f1f25 75%)',
+          backgroundSize: '18px 18px',
+          backgroundPosition: '0 0, 0 9px, 9px -9px, -9px 0px',
+          backgroundColor: '#131317',
         };
       case 'custom':
         return customBgUrl
           ? { backgroundImage: `url(${customBgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-          : { background: '#111827' };
+          : { background: '#18181d' };
       default:
-        return { background: '#0f172a' };
+        return { background: '#141418' };
     }
   })();
 
@@ -227,81 +227,76 @@ export const CrosshairPreview: React.FC<CrosshairPreviewProps> = ({
   };
 
   return (
-    <div className="rounded-2xl bg-[#0b101b] border border-slate-800/90 overflow-hidden flex flex-col hud-frame shadow-xl shadow-black/40">
+    <div className="rounded-xl bg-[#141418] border border-[#23232a] overflow-hidden flex flex-col">
       {/* Top Preview Toolbar */}
-      <div className="px-3 py-2 bg-[#0e1422] border-b border-slate-800/80 space-y-1.5">
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1 flex-wrap">
-            {(
-              [
-                ['tactical', 'Dark'],
-                ['live-targets', 'Targets'],
-                ['desert', 'Desert'],
-                ['snow', 'Snow'],
-                ['forest', 'Forest'],
-                ['neon', 'Neon'],
-                ['alpha', 'Alpha'],
-              ] as Array<[BackdropId, string]>
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setBackdrop(id)}
-                className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition cursor-pointer ${
-                  backdrop === id
-                    ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40'
-                    : 'text-slate-400 hover:text-slate-200 bg-slate-900/70 border border-slate-800'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <label className="px-2 py-0.5 rounded-md text-[10px] font-semibold text-slate-300 hover:text-cyan-200 bg-slate-900/80 border border-slate-700/80 cursor-pointer flex items-center gap-1 shrink-0">
-            <ImagePlus className="w-3 h-3 text-cyan-400" />
-            <span>BG</span>
+      <div className="px-3 py-2 bg-[#111115] border-b border-[#202026] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-0.5 bg-[#0c0c0e] p-0.5 rounded-lg border border-[#202026]">
+          {(
+            [
+              ['tactical', 'Dark'],
+              ['live-targets', 'Targets'],
+              ['desert', 'Sand'],
+              ['snow', 'Light'],
+              ['forest', 'Green'],
+              ['alpha', 'Grid'],
+            ] as Array<[BackdropId, string]>
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setBackdrop(id)}
+              className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                backdrop === id
+                  ? 'bg-[#222229] text-white'
+                  : 'text-[#787886] hover:text-[#d4d4dc]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <label
+            className={`px-2 py-1 rounded-md text-[11px] font-medium cursor-pointer flex items-center gap-1 transition-colors ${
+              backdrop === 'custom' ? 'bg-[#222229] text-white' : 'text-[#787886] hover:text-[#d4d4dc]'
+            }`}
+            title="Upload a game screenshot as preview background"
+          >
+            <ImagePlus className="w-3 h-3" />
             <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
           </label>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-            Optical Preview Stage
-          </span>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowPixelGrid((v) => !v)}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-mono flex items-center gap-1 border transition cursor-pointer ${
-                showPixelGrid
-                  ? 'bg-cyan-500/20 text-cyan-200 border-cyan-400/40'
-                  : 'bg-slate-900/70 text-slate-400 border-slate-800 hover:text-slate-200'
-              }`}
-              title="Toggle Precision Pixel Alignment Grid"
-            >
-              <Grid3X3 className="w-3 h-3" />
-              <span>GRID</span>
-            </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowPixelGrid((v) => !v)}
+            className={`p-1.5 rounded-md border transition-colors cursor-pointer ${
+              showPixelGrid
+                ? 'bg-[#25252e] text-white border-[#3a3a46]'
+                : 'bg-[#0c0c0e] text-[#787886] border-[#202026] hover:text-[#d4d4dc]'
+            }`}
+            title="Toggle pixel alignment grid"
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+          </button>
 
-            <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-md p-0.5">
-              {[1, 2, 4, 6].map((z) => (
-                <button
-                  key={z}
-                  type="button"
-                  onClick={() => setZoom(z)}
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition cursor-pointer ${
-                    zoom === z ? 'bg-cyan-500/30 text-cyan-200' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {z}x
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center bg-[#0c0c0e] border border-[#202026] rounded-md p-0.5">
+            {[1, 2, 4, 6].map((z) => (
+              <button
+                key={z}
+                type="button"
+                onClick={() => setZoom(z)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors cursor-pointer ${
+                  zoom === z ? 'bg-[#24242c] text-white' : 'text-[#727280] hover:text-[#d4d4dc]'
+                }`}
+              >
+                {z}×
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Main Live Optical Viewport */}
+      {/* Main Preview Viewport */}
       <div
         className="relative h-64 sm:h-72 w-full select-none cursor-crosshair overflow-hidden"
         style={backdropStyle}
@@ -342,51 +337,39 @@ export const CrosshairPreview: React.FC<CrosshairPreviewProps> = ({
             className="absolute inset-0 pointer-events-none"
             style={{
               backgroundImage:
-                'linear-gradient(rgba(0,240,255,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.16) 1px, transparent 1px)',
+                'linear-gradient(rgba(255,255,255,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.09) 1px, transparent 1px)',
               backgroundSize: `${Math.max(8, zoom * 4)}px ${Math.max(8, zoom * 4)}px`,
             }}
           >
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-cyan-400/35" />
-            <div className="absolute top-1/2 left-0 right-0 h-px bg-cyan-400/35" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-[#ff5526]/40" />
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-[#ff5526]/40" />
           </div>
         )}
 
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
-        {/* Subtle HUD Telemetry Overlays */}
-        <div className="absolute top-2.5 left-3 pointer-events-none flex items-center gap-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/55 backdrop-blur border border-white/10 text-cyan-300 flex items-center gap-1">
-            <ZoomIn className="w-3 h-3" /> {zoom}.0x OPTICS
-          </span>
-          {config.animation.adsAction !== 'none' && (
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/55 backdrop-blur border border-white/10 text-amber-300">
-              ADS: {config.animation.adsAction.toUpperCase()}
-            </span>
-          )}
-        </div>
-
-        <div className="absolute bottom-2.5 left-3 pointer-events-none text-[10px] font-mono px-2 py-0.5 rounded bg-black/55 backdrop-blur border border-white/10 text-slate-300 flex items-center gap-1.5">
-          <MousePointerClick className="w-3 h-3 text-cyan-400" />
-          <span>Left-Click: Test Fire • Right-Click: Test ADS</span>
+        <div className="absolute bottom-2.5 left-3 pointer-events-none text-[10px] text-white/55 flex items-center gap-1.5">
+          <MousePointerClick className="w-3 h-3" />
+          <span>Left-click to fire · Right-click to ADS</span>
         </div>
       </div>
 
       {/* Bottom Interactive Simulator Bar */}
-      <div className="px-3 py-2 bg-[#0e1422] border-t border-slate-800/80 flex items-center justify-between gap-1.5">
+      <div className="px-3 py-2 bg-[#111115] border-t border-[#202026] flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-mono uppercase text-slate-500">SIM:</span>
+          <span className="text-[11px] text-[#6e6e7c] mr-0.5">Test</span>
           <button
             type="button"
             onMouseDown={() => setSimFire(true)}
             onMouseUp={() => setSimFire(false)}
             onMouseLeave={() => setSimFire(false)}
-            className={`px-2 py-1 rounded-md text-[10px] font-semibold border transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
               simFire
-                ? 'bg-rose-500/25 border-rose-400 text-rose-200'
-                : 'bg-slate-900 border-slate-700/80 text-slate-300 hover:border-rose-400/50'
+                ? 'bg-[#ff5526]/20 border-[#ff5526]/55 text-[#ff9a7d]'
+                : 'bg-[#17171c] border-[#26262e] text-[#b4b4c0] hover:text-white'
             }`}
           >
-            Fire (LMB)
+            Fire
           </button>
           <button
             type="button"
@@ -394,24 +377,24 @@ export const CrosshairPreview: React.FC<CrosshairPreviewProps> = ({
               setSimAds((v) => !v);
               onAdsTestTrigger?.();
             }}
-            className={`px-2 py-1 rounded-md text-[10px] font-semibold border transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
               simAds
-                ? 'bg-amber-500/25 border-amber-400 text-amber-200'
-                : 'bg-slate-900 border-slate-700/80 text-slate-300 hover:border-amber-400/50'
+                ? 'bg-amber-500/20 border-amber-500/50 text-amber-200'
+                : 'bg-[#17171c] border-[#26262e] text-[#b4b4c0] hover:text-white'
             }`}
           >
-            ADS (RMB)
+            ADS
           </button>
           <button
             type="button"
             onClick={() => setSimMoving((v) => !v)}
-            className={`px-2 py-1 rounded-md text-[10px] font-semibold border transition cursor-pointer ${
+            className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
               simMoving
-                ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200'
-                : 'bg-slate-900 border-slate-700/80 text-slate-300 hover:border-cyan-400/50'
+                ? 'bg-white/15 border-white/30 text-white'
+                : 'bg-[#17171c] border-[#26262e] text-[#b4b4c0] hover:text-white'
             }`}
           >
-            Move (WASD)
+            Move
           </button>
         </div>
 
@@ -423,7 +406,7 @@ export const CrosshairPreview: React.FC<CrosshairPreviewProps> = ({
             setSimMoving(false);
             animRef.current.reset();
           }}
-          className="text-[10px] text-slate-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer shrink-0"
+          className="text-[11px] text-[#787886] hover:text-white flex items-center gap-1 cursor-pointer shrink-0 transition-colors"
         >
           <RotateCcw className="w-3 h-3" /> Reset
         </button>

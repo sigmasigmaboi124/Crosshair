@@ -157,7 +157,7 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
   };
 
   const bgClass = {
-    ready: 'bg-[#0b1220] border-cyan-500/40',
+    ready: 'bg-[#0b1220] border-[#2e2e38]',
     waiting: 'bg-rose-950/80 border-rose-500/60',
     go: 'bg-emerald-500/90 border-emerald-200',
     'too-early': 'bg-amber-950/85 border-amber-400/60',
@@ -165,10 +165,10 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
   }[stage];
 
   return (
-    <div className="h-full w-full flex flex-col p-4 gap-3 select-none bg-[#060910]">
-      <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#0c121e] border border-slate-800">
+    <div className="h-full w-full flex flex-col p-4 gap-3 select-none bg-[#0c0c0e]">
+      <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#141418] border border-[#23232a]">
         <div className="flex items-center gap-3">
-          <Timer className="w-4 h-4 text-cyan-400" />
+          <Timer className="w-4 h-4 text-[#a1a1ad]" />
           <span className="text-xs font-black tracking-wider text-white uppercase">
             Reaction Time Benchmark ({Math.min(TOTAL_ROUNDS, times.length + (stage === 'go' || stage === 'waiting' ? 1 : 0))}/{TOTAL_ROUNDS})
           </span>
@@ -176,7 +176,7 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
             {times.map((ms, i) => (
               <span
                 key={i}
-                className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/35"
+                className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/15 text-[#f4f4f6] border border-[#2e2e38]"
               >
                 {ms}ms
               </span>
@@ -192,7 +192,7 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
               setLastMs(null);
               setStage('ready');
             }}
-            className="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-300 flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs text-[#d0d0d8] flex items-center gap-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset
           </button>
@@ -211,11 +211,11 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
         onMouseDown={handlePadMouseDown}
         className={`flex-1 rounded-3xl border-2 transition-colors duration-75 flex flex-col items-center justify-center gap-3 cursor-pointer ${bgClass}`}
       >
-        <Zap className={`w-14 h-14 ${stage === 'go' ? 'text-slate-950' : 'text-cyan-300'}`} />
+        <Zap className={`w-14 h-14 ${stage === 'go' ? 'text-[#0c0c0e]' : 'text-[#f4f4f6]'}`} />
         {stage === 'ready' && (
           <>
             <div className="text-3xl font-black text-white tracking-wide">CLICK ANYWHERE TO BEGIN</div>
-            <p className="text-sm text-slate-400">Wait for the screen to flash EMERALD GREEN, then click immediately.</p>
+            <p className="text-sm text-[#9696a4]">Wait for the screen to flash EMERALD GREEN, then click immediately.</p>
           </>
         )}
         {stage === 'waiting' && (
@@ -225,7 +225,7 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
           </>
         )}
         {stage === 'go' && (
-          <div className="text-5xl font-black text-slate-950 tracking-widest">CLICK NOW!</div>
+          <div className="text-5xl font-black text-[#0c0c0e] tracking-widest">CLICK NOW!</div>
         )}
         {stage === 'too-early' && (
           <>
@@ -235,8 +235,8 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
         )}
         {stage === 'result' && lastMs !== null && (
           <>
-            <div className="text-5xl font-black font-mono text-cyan-300">{lastMs} ms</div>
-            <p className="text-sm text-slate-300">Click anywhere for Round {times.length + 1} of {TOTAL_ROUNDS}</p>
+            <div className="text-5xl font-black font-mono text-[#f4f4f6]">{lastMs} ms</div>
+            <p className="text-sm text-[#d0d0d8]">Click anywhere for Round {times.length + 1} of {TOTAL_ROUNDS}</p>
           </>
         )}
       </button>
@@ -254,20 +254,20 @@ export const SessionTrendGraph: React.FC<{ records: AimSessionRecord[]; modeName
   const series = [...records].slice(0, 15).reverse();
 
   return (
-    <div className="rounded-2xl bg-[#0d131f] border border-slate-800/90 p-4 space-y-2.5">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-200 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-cyan-400" />
+    <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-2.5">
+      <div className="flex items-center justify-between border-b border-[#23232a] pb-2">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0] flex items-center gap-2">
+          <Activity className="w-4 h-4 text-[#a1a1ad]" />
           <span>{modeName} Trend (Score & Accuracy)</span>
         </h3>
         <div className="flex items-center gap-3 text-[10px] font-mono">
-          <span className="text-cyan-300">● SCORE</span>
+          <span className="text-[#f4f4f6]">● SCORE</span>
           <span className="text-emerald-300">● ACC %</span>
         </div>
       </div>
 
       {series.length < 2 ? (
-        <div className="h-32 flex items-center justify-center text-xs text-slate-500 text-center px-4">
+        <div className="h-32 flex items-center justify-center text-xs text-[#727280] text-center px-4">
           Complete at least 2 runs in {modeName} to unlock your live Score & Accuracy progression chart.
         </div>
       ) : (
@@ -302,8 +302,8 @@ const TrendSvg: React.FC<{ series: AimSessionRecord[] }> = ({ series }) => {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-32 overflow-visible">
         <defs>
           <linearGradient id="zpScoreFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.32" />
-            <stop offset="100%" stopColor="#00f0ff" stopOpacity="0.0" />
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((r) => (
@@ -313,13 +313,13 @@ const TrendSvg: React.FC<{ series: AimSessionRecord[] }> = ({ series }) => {
             y1={padY + r * (H - padY * 2)}
             x2={W - padX}
             y2={padY + r * (H - padY * 2)}
-            stroke="rgba(148,163,184,0.12)"
+            stroke="rgba(255,255,255,0.07)"
             strokeDasharray="3 3"
           />
         ))}
         <path d={areaPath} fill="url(#zpScoreFill)" />
-        <polyline fill="none" stroke="#10f59b" strokeWidth="1.8" strokeDasharray="4 3" points={accPoints} />
-        <polyline fill="none" stroke="#00f0ff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" points={scorePoints} />
+        <polyline fill="none" stroke="#ff5526" strokeWidth="1.6" strokeDasharray="4 3" points={accPoints} />
+        <polyline fill="none" stroke="#f4f4f6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" points={scorePoints} />
 
         {series.map((r, i) => (
           <g
@@ -328,17 +328,17 @@ const TrendSvg: React.FC<{ series: AimSessionRecord[] }> = ({ series }) => {
             onMouseLeave={() => setHoverIdx(null)}
             className="cursor-pointer"
           >
-            <circle cx={xAt(i)} cy={yScore(r.score)} r={hoverIdx === i ? 5 : 3.2} fill="#00f0ff" stroke="#070a11" strokeWidth="1.5" />
-            <circle cx={xAt(i)} cy={yAcc(r.accuracy)} r={hoverIdx === i ? 4 : 2.4} fill="#10f59b" />
+            <circle cx={xAt(i)} cy={yScore(r.score)} r={hoverIdx === i ? 4.5 : 3} fill="#ffffff" stroke="#0c0c0e" strokeWidth="1.5" />
+            <circle cx={xAt(i)} cy={yAcc(r.accuracy)} r={hoverIdx === i ? 3.5 : 2.2} fill="#ff5526" />
           </g>
         ))}
       </svg>
 
       {active && (
-        <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1">
+        <div className="flex items-center justify-between text-[10px] font-mono text-[#9696a4] px-1">
           <span>{hoverIdx !== null ? `Run #${hoverIdx + 1}` : 'Latest'} ({active.date})</span>
           <span>
-            Score: <strong className="text-cyan-300">{active.score.toLocaleString()}</strong> • Acc:{' '}
+            Score: <strong className="text-[#f4f4f6]">{active.score.toLocaleString()}</strong> • Acc:{' '}
             <strong className="text-emerald-300">{active.accuracy}%</strong> • Avg:{' '}
             <strong className="text-white">{active.avgReactionMs}ms</strong>
           </span>

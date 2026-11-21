@@ -176,9 +176,9 @@ interface ParticleBurst {
 
 const RANK_COLORS: Record<AimSessionRecord['rank'], string> = {
   Bronze: 'text-amber-600 border-amber-700/60 bg-amber-950/40',
-  Silver: 'text-slate-200 border-slate-400/50 bg-slate-800/60',
+  Silver: 'text-[#ececf0] border-slate-400/50 bg-[#202027]/60',
   Gold: 'text-yellow-300 border-yellow-400/60 bg-yellow-500/15',
-  Platinum: 'text-cyan-300 border-cyan-400/60 bg-cyan-500/15',
+  Platinum: 'text-[#f4f4f6] border-white/35 bg-cyan-500/15',
   Diamond: 'text-sky-300 border-sky-400/60 bg-sky-500/20',
   Master: 'text-purple-300 border-purple-400/60 bg-purple-500/20',
   Grandmaster: 'text-rose-300 border-rose-400/60 bg-rose-500/20',
@@ -1118,62 +1118,62 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   if (phase === 'playing') {
     const pctLeft = currentModeSpec.isSandbox ? 100 : (hud.timeLeft / Math.max(1, aimCfg.durationSec)) * 100;
     return (
-      <div className="relative w-full h-full bg-[#060910] overflow-hidden select-none">
+      <div className="relative w-full h-full bg-[#0c0c0e] overflow-hidden select-none">
         {/* 3D WebGL Arena */}
         <div ref={mountRef} className="w-full h-full" />
 
         {/* Live User Crosshair Canvas */}
         <canvas ref={hudCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
-        {/* Bespoke Top Curved Telemetry HUD Strip */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-3 px-5 py-2 rounded-2xl bg-[#070b14]/80 backdrop-blur-md border border-cyan-400/30 shadow-[0_0_28px_rgba(0,0,0,0.65)]">
-          <div className="text-center min-w-[78px]">
-            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400">SCORE</div>
-            <div className="text-lg font-black font-mono text-white tabular-nums leading-tight">
+        {/* Clean Competitive Esports Top Scoreboard HUD */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-5 px-5 py-2 rounded-lg bg-[#0c0c0e]/85 border border-white/10">
+          <div className="text-center min-w-[68px]">
+            <div className="text-[9px] uppercase tracking-wider text-[#8c8c9a]">Score</div>
+            <div className="text-base font-semibold font-mono text-white tabular-nums leading-tight">
               {hud.score.toLocaleString()}
             </div>
           </div>
 
-          <div className="w-px h-7 bg-slate-700/70" />
+          <div className="w-px h-6 bg-white/10" />
 
-          <div className="text-center min-w-[76px]">
-            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400">
-              {currentModeSpec.isSandbox ? 'SANDBOX' : 'TIME'}
+          <div className="text-center min-w-[64px]">
+            <div className="text-[9px] uppercase tracking-wider text-[#8c8c9a]">
+              {currentModeSpec.isSandbox ? 'Mode' : 'Time'}
             </div>
             <div
-              className={`text-xl font-black font-mono tabular-nums leading-tight ${
-                !currentModeSpec.isSandbox && hud.timeLeft <= 8 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'
+              className={`text-lg font-semibold font-mono tabular-nums leading-tight ${
+                !currentModeSpec.isSandbox && hud.timeLeft <= 8 ? 'text-[#ff5526]' : 'text-white'
               }`}
             >
-              {currentModeSpec.isSandbox ? '∞' : `${hud.timeLeft.toFixed(1)}s`}
+              {currentModeSpec.isSandbox ? 'Free' : `${hud.timeLeft.toFixed(1)}s`}
             </div>
           </div>
 
-          <div className="w-px h-7 bg-slate-700/70" />
+          <div className="w-px h-6 bg-white/10" />
 
-          <div className="text-center min-w-[68px]">
-            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400">ACC</div>
-            <div className="text-lg font-black font-mono text-emerald-300 tabular-nums leading-tight">
+          <div className="text-center min-w-[56px]">
+            <div className="text-[9px] uppercase tracking-wider text-[#8c8c9a]">Acc</div>
+            <div className="text-base font-semibold font-mono text-[#e4e4e8] tabular-nums leading-tight">
               {hud.accuracy}%
             </div>
           </div>
 
-          <div className="w-px h-7 bg-slate-700/70" />
+          <div className="w-px h-6 bg-white/10" />
 
-          <div className="text-center min-w-[66px]">
-            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400">STREAK</div>
-            <div className="text-lg font-black font-mono text-amber-300 tabular-nums leading-tight flex items-center justify-center gap-1">
-              {hud.streak >= 5 && <Flame className="w-4 h-4 text-amber-400" />}
+          <div className="text-center min-w-[54px]">
+            <div className="text-[9px] uppercase tracking-wider text-[#8c8c9a]">Streak</div>
+            <div className="text-base font-semibold font-mono text-[#e4e4e8] tabular-nums leading-tight flex items-center justify-center gap-1">
+              {hud.streak >= 5 && <Flame className="w-3.5 h-3.5 text-[#ff5526]" />}
               {hud.streak}
             </div>
           </div>
 
           {!currentModeSpec.isTracking && (
             <>
-              <div className="w-px h-7 bg-slate-700/70" />
-              <div className="text-center min-w-[68px]">
-                <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400">AVG TTK</div>
-                <div className="text-sm font-bold font-mono text-slate-200 tabular-nums leading-tight">
+              <div className="w-px h-6 bg-white/10" />
+              <div className="text-center min-w-[58px]">
+                <div className="text-[9px] uppercase tracking-wider text-[#8c8c9a]">Avg TTK</div>
+                <div className="text-sm font-medium font-mono text-[#c4c4cf] tabular-nums leading-tight">
                   {hud.avgReactionMs}ms
                 </div>
               </div>
@@ -1181,11 +1181,11 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           )}
         </div>
 
-        {/* Sleek Top Timer Progress Hairline */}
+        {/* Crisp 2px Top Timer Hairline */}
         {!currentModeSpec.isSandbox && (
-          <div className="absolute top-0 left-0 right-0 h-1 bg-slate-900/90 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10 pointer-events-none">
             <div
-              className="h-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-300 transition-all duration-100"
+              className="h-full bg-[#ff5526] transition-all duration-100"
               style={{ width: `${Math.max(0, Math.min(100, pctLeft))}%` }}
             />
           </div>
@@ -1197,8 +1197,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             <span
               className={`text-[11px] font-mono font-bold px-3 py-1 rounded-full border transition ${
                 hud.isOnTarget
-                  ? 'bg-emerald-500/25 border-emerald-400 text-emerald-200 shadow-[0_0_16px_rgba(16,245,155,0.4)]'
-                  : 'bg-slate-950/75 border-slate-700 text-slate-400'
+                  ? 'bg-emerald-500/25 border-emerald-400 text-emerald-200'
+                  : 'bg-[#0e0e11] border-[#2c2c35] text-[#9696a4]'
               }`}
             >
               {hud.isOnTarget ? '● TARGET LOCKED' : '○ ACQUIRE TARGET'}
@@ -1207,9 +1207,9 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         )}
 
         {/* Bottom Minimal Telemetry Strip */}
-        <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none text-[11px] font-mono text-slate-400">
+        <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between pointer-events-none text-[11px] font-mono text-[#9696a4]">
           <div className="px-2.5 py-1 rounded-lg bg-black/55 border border-white/10">
-            MODE: <span className="text-cyan-300">{currentModeSpec.name.toUpperCase()}</span>
+            MODE: <span className="text-[#f4f4f6]">{currentModeSpec.name.toUpperCase()}</span>
             {selectedMode === 'recoil' && (
               <>
                 {' '}• WEAPON: <span className="text-amber-300">{WEAPON_PATTERNS[recoilWeapon].name}</span> • MAG:{' '}
@@ -1233,13 +1233,13 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         {/* Pause / Pointer Unlock Overlay */}
         {!isPointerLocked && (
           <div className="absolute inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center z-20">
-            <div className="rounded-2xl bg-[#0c121e] border border-cyan-400/40 p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center mx-auto">
-                <Crosshair className="w-6 h-6 text-cyan-300" />
+            <div className="rounded-2xl bg-[#141418] border border-[#3a3a46] p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-[#3a3a46] flex items-center justify-center mx-auto">
+                <Crosshair className="w-6 h-6 text-[#f4f4f6]" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white">{currentModeSpec.name}</h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-[#9696a4] mt-1">
                   Click Resume to lock mouse cursor into 3D first-person view. Hold Right-Click to test ADS zoom & crosshair behavior.
                 </p>
               </div>
@@ -1264,7 +1264,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       // Ignore
                     }
                   }}
-                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs tracking-wider cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider cursor-pointer"
                 >
                   CLICK TO RESUME AIMING
                 </button>
@@ -1275,7 +1275,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       setPhase('lobby');
                       setTimeout(() => setPhase('playing'), 20);
                     }}
-                    className="py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 cursor-pointer flex items-center justify-center gap-1"
+                    className="py-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] cursor-pointer flex items-center justify-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" /> Restart
                   </button>
@@ -1299,10 +1299,10 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   if (phase === 'summary' && lastResult) {
     return (
       <div className="h-full flex items-center justify-center p-6 overflow-y-auto">
-        <div className="max-w-xl w-full rounded-2xl bg-[#0d1320] border border-cyan-400/35 p-6 space-y-5 shadow-2xl hud-frame">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="max-w-xl w-full rounded-2xl bg-[#141418] border border-[#2e2e38] p-6 space-y-5 shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#23232a] pb-4">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#a1a1ad]">
                 SESSION DEBRIEF • {lastResult.mode.toUpperCase()}
               </span>
               <h2 className="text-xl font-black text-white mt-0.5">Range Run Complete</h2>
@@ -1313,31 +1313,31 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl bg-slate-950/90 border border-slate-800 p-3 text-center">
-              <div className="text-[10px] font-mono text-slate-500">FINAL SCORE</div>
-              <div className="text-xl font-black font-mono text-cyan-300 mt-1">{lastResult.score.toLocaleString()}</div>
+            <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
+              <div className="text-[10px] font-mono text-[#727280]">FINAL SCORE</div>
+              <div className="text-xl font-black font-mono text-[#f4f4f6] mt-1">{lastResult.score.toLocaleString()}</div>
             </div>
-            <div className="rounded-xl bg-slate-950/90 border border-slate-800 p-3 text-center">
-              <div className="text-[10px] font-mono text-slate-500">ACCURACY</div>
+            <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
+              <div className="text-[10px] font-mono text-[#727280]">ACCURACY</div>
               <div className="text-xl font-black font-mono text-emerald-300 mt-1">{lastResult.accuracy}%</div>
             </div>
-            <div className="rounded-xl bg-slate-950/90 border border-slate-800 p-3 text-center">
-              <div className="text-[10px] font-mono text-slate-500">AVG REACTION</div>
+            <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
+              <div className="text-[10px] font-mono text-[#727280]">AVG REACTION</div>
               <div className="text-xl font-black font-mono text-white mt-1">{lastResult.avgReactionMs}ms</div>
             </div>
-            <div className="rounded-xl bg-slate-950/90 border border-slate-800 p-3 text-center">
-              <div className="text-[10px] font-mono text-slate-500">BEST STREAK</div>
+            <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
+              <div className="text-[10px] font-mono text-[#727280]">BEST STREAK</div>
               <div className="text-xl font-black font-mono text-amber-300 mt-1">{lastResult.bestStreak}</div>
             </div>
           </div>
 
-          <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3 flex items-center justify-between text-xs text-slate-400">
+          <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 flex items-center justify-between text-xs text-[#9696a4]">
             <span>
               Targets Hit: <strong className="text-white">{lastResult.hits}</strong> • Missed:{' '}
               <strong className="text-rose-300">{lastResult.misses}</strong>
             </span>
             <span>
-              Crosshair Used: <strong className="text-cyan-300">{lastResult.crosshairName}</strong>
+              Crosshair Used: <strong className="text-[#f4f4f6]">{lastResult.crosshairName}</strong>
             </span>
           </div>
 
@@ -1345,14 +1345,14 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             <button
               type="button"
               onClick={() => startSession(lastResult.mode)}
-              className="flex-1 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" /> PLAY AGAIN
             </button>
             <button
               type="button"
               onClick={() => setPhase('lobby')}
-              className="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[#ececf0] font-bold text-xs cursor-pointer"
             >
               Return to Range Hub
             </button>
@@ -1366,18 +1366,18 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   return (
     <div className="h-full flex flex-col p-4 overflow-y-auto gap-4">
       {/* Hero Launch Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#0c1626] via-[#0e1422] to-[#0a191f] border border-cyan-500/30 p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hud-frame">
+      <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
               BUILT-IN 3D WEBGL AIM ENGINE
             </span>
-            <span className="text-[10px] font-mono text-slate-400">
-              USING LIVE RETICLE: <strong className="text-cyan-300">{activeConfig.name}</strong>
+            <span className="text-[10px] font-mono text-[#9696a4]">
+              USING LIVE RETICLE: <strong className="text-[#f4f4f6]">{activeConfig.name}</strong>
             </span>
           </div>
           <h2 className="text-xl font-black text-white mt-1.5 tracking-wide">The Range — 3D Aim Trainer & Crosshair Lab</h2>
-          <p className="text-xs text-slate-400 mt-0.5 max-w-2xl">
+          <p className="text-xs text-[#9696a4] mt-0.5 max-w-2xl">
             Warm up flicks, micro-adjustments, tracking, and target switching using your exact custom crosshair and game sensitivity ({cmPer360} cm/360°).
           </p>
         </div>
@@ -1388,8 +1388,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             onClick={() => setShowSettingsDrawer((v) => !v)}
             className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition ${
               showSettingsDrawer
-                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
-                : 'bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500'
+                ? 'bg-[#25252e] border-[#444452] text-white'
+                : 'bg-[#18181e] border-[#2c2c35] text-[#ececf0] hover:border-[#464654]'
             }`}
           >
             <Settings2 className="w-4 h-4" /> Sens & Arena
@@ -1397,7 +1397,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           <button
             type="button"
             onClick={() => startSession(selectedMode)}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-black text-xs tracking-wider flex items-center gap-2 shadow-[0_0_24px_rgba(0,240,255,0.3)] cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider flex items-center gap-2 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-slate-950" /> LAUNCH {currentModeSpec.name.toUpperCase()}
           </button>
@@ -1406,9 +1406,9 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
 
       {/* Collapsible Sensitivity Converter & Arena Settings */}
       {showSettingsDrawer && (
-        <div className="rounded-2xl bg-[#0e1422] border border-cyan-500/30 p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-300">Game Sensitivity Profile</label>
+            <label className="text-[11px] font-semibold text-[#d0d0d8]">Game Sensitivity Profile</label>
             <select
               value={aimCfg.gamePreset}
               onChange={(e) =>
@@ -1420,7 +1420,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                   },
                 }))
               }
-              className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white"
+              className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs text-white"
             >
               <option value="valorant">VALORANT</option>
               <option value="cs2">Counter-Strike 2 (CS2)</option>
@@ -1434,7 +1434,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">In-Game Sens</label>
+              <label className="text-[11px] font-semibold text-[#d0d0d8]">In-Game Sens</label>
               <input
                 type="number"
                 step="0.05"
@@ -1447,11 +1447,11 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                     aimSettings: { ...s.aimSettings, inGameSens: Math.max(0.05, Number(e.target.value) || 0.35) },
                   }))
                 }
-                className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono text-cyan-300"
+                className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs font-mono text-[#f4f4f6]"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">Mouse DPI</label>
+              <label className="text-[11px] font-semibold text-[#d0d0d8]">Mouse DPI</label>
               <input
                 type="number"
                 step="100"
@@ -1464,14 +1464,14 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                     aimSettings: { ...s.aimSettings, dpi: Math.max(200, Number(e.target.value) || 800) },
                   }))
                 }
-                className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono text-cyan-300"
+                className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs font-mono text-[#f4f4f6]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">FOV ({aimCfg.fov}°)</label>
+              <label className="text-[11px] font-semibold text-[#d0d0d8]">FOV ({aimCfg.fov}°)</label>
               <input
                 type="range"
                 min={70}
@@ -1483,11 +1483,11 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                     aimSettings: { ...s.aimSettings, fov: Number(e.target.value) },
                   }))
                 }
-                className="optics-slider w-full mt-2"
+                className="studio-slider w-full mt-2"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-slate-300">Run Timer</label>
+              <label className="text-[11px] font-semibold text-[#d0d0d8]">Run Timer</label>
               <select
                 value={aimCfg.durationSec}
                 onChange={(e) =>
@@ -1496,7 +1496,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                     aimSettings: { ...s.aimSettings, durationSec: Number(e.target.value) },
                   }))
                 }
-                className="w-full px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white"
+                className="w-full px-2.5 py-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs text-white"
               >
                 <option value={30}>30 Seconds</option>
                 <option value={45}>45 Seconds</option>
@@ -1507,7 +1507,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
 
           <div className="flex items-center justify-between gap-2">
             <div className="space-y-1 flex-1">
-              <label className="text-[11px] font-semibold text-slate-300">Arena & Target</label>
+              <label className="text-[11px] font-semibold text-[#d0d0d8]">Arena & Target</label>
               <div className="flex items-center gap-2">
                 <select
                   value={aimCfg.wallTheme}
@@ -1517,7 +1517,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       aimSettings: { ...s.aimSettings, wallTheme: e.target.value as typeof s.aimSettings.wallTheme },
                     }))
                   }
-                  className="flex-1 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white"
+                  className="flex-1 px-2 py-1.5 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-xs text-white"
                 >
                   <option value="obsidian">Obsidian</option>
                   <option value="grid">Tactical Slate</option>
@@ -1533,7 +1533,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       aimSettings: { ...s.aimSettings, targetColor: e.target.value },
                     }))
                   }
-                  className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                  className="w-8 h-8 rounded border border-[#2c2c35] bg-transparent cursor-pointer"
                   title="Target Sphere Color"
                 />
               </div>
@@ -1546,19 +1546,19 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                   aimSettings: { ...s.aimSettings, soundEnabled: !s.aimSettings.soundEnabled },
                 }))
               }
-              className="mt-5 p-2 rounded-lg bg-slate-950 border border-slate-700 text-cyan-300 cursor-pointer"
+              className="mt-5 p-2 rounded-lg bg-[#0e0e11] border border-[#2c2c35] text-[#f4f4f6] cursor-pointer"
               title="Toggle Hit Audio"
             >
-              {aimCfg.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+              {aimCfg.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-[#727280]" />}
             </button>
           </div>
         </div>
       )}
 
       {/* Recoil Weapon Bar & WASD Strafe-Dodge Quick Strip */}
-      <div className="rounded-xl bg-[#0d131f] border border-slate-800/90 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+      <div className="rounded-xl bg-[#141418] border border-[#23232a] px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Recoil Weapon:</span>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#727280]">Recoil Weapon:</span>
           {(['ak47', 'vandal', 'phantom'] as RecoilWeaponId[]).map((wid) => (
             <button
               key={wid}
@@ -1567,7 +1567,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
               className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
                 recoilWeapon === wid
                   ? 'bg-amber-500/20 border-amber-400/60 text-amber-200'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                  : 'bg-[#18181e] border-[#23232a] text-[#9696a4] hover:text-white'
               }`}
             >
               {WEAPON_PATTERNS[wid].name} ({WEAPON_PATTERNS[wid].game})
@@ -1578,8 +1578,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             onClick={() => setShowRecoilGuide((v) => !v)}
             className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
               showRecoilGuide
-                ? 'bg-cyan-500/15 border-cyan-400/50 text-cyan-200'
-                : 'bg-slate-900 border-slate-800 text-slate-400'
+                ? 'bg-[#202028] border-[#ff5526]/50 text-[#e4e4e8]'
+                : 'bg-[#18181e] border-[#23232a] text-[#9696a4]'
             }`}
           >
             Ghost Guide: {showRecoilGuide ? 'ON' : 'OFF'}
@@ -1592,7 +1592,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           className={`px-3 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
             enableWasdStrafe
               ? 'bg-emerald-500/20 border-emerald-400/55 text-emerald-200'
-              : 'bg-slate-900 border-slate-800 text-slate-400'
+              : 'bg-[#18181e] border-[#23232a] text-[#9696a4]'
           }`}
         >
           WASD Strafe-Dodging: {enableWasdStrafe ? 'ON' : 'OFF'}
@@ -1613,8 +1613,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                 onDoubleClick={() => startSession(m.id)}
                 className={`rounded-2xl p-4 border transition cursor-pointer flex flex-col justify-between gap-3 ${
                   active
-                    ? 'bg-gradient-to-br from-cyan-500/15 to-[#0d1422] border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.12)]'
-                    : 'bg-[#0d131f] border-slate-800/90 hover:border-slate-600'
+                    ? 'bg-[#1b1b21] border-white/35'
+                    : 'bg-[#141418] border-[#23232a] hover:border-[#3b3b47]'
                 }`}
               >
                 <div>
@@ -1624,8 +1624,8 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                         m.id === 'daily'
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
                           : m.id === 'range'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                          : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'
+                          : 'bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39]'
                       }`}
                     >
                       {m.tag}
@@ -1637,17 +1637,17 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                     )}
                   </div>
                   <h3 className="text-sm font-black text-white mt-2 flex items-center gap-1.5">
-                    {m.isTracking ? <Zap className="w-4 h-4 text-emerald-400" /> : <Target className="w-4 h-4 text-cyan-400" />}
+                    {m.isTracking ? <Zap className="w-4 h-4 text-emerald-400" /> : <Target className="w-4 h-4 text-[#a1a1ad]" />}
                     <span>{m.name}</span>
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">{m.description}</p>
+                  <p className="text-xs text-[#9696a4] mt-1 leading-relaxed">{m.description}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-[11px] font-mono">
-                  <span className="text-slate-500">
+                <div className="flex items-center justify-between pt-2 border-t border-[#222228] text-[11px] font-mono">
+                  <span className="text-[#727280]">
                     {best ? (
                       <>
-                        PB: <strong className="text-cyan-300">{best.score.toLocaleString()}</strong> ({best.accuracy}%)
+                        PB: <strong className="text-[#f4f4f6]">{best.score.toLocaleString()}</strong> ({best.accuracy}%)
                       </>
                     ) : (
                       'No record yet'
@@ -1659,7 +1659,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       e.stopPropagation();
                       startSession(m.id);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-200 hover:text-slate-950 font-bold text-[11px] transition cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-[#22222a] hover:bg-[#f4f4f6] text-[#e4e4e8] hover:text-[#0c0c0e] font-bold text-[11px] transition cursor-pointer"
                   >
                     Play →
                   </button>
@@ -1676,13 +1676,13 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             modeName={currentModeSpec.name}
           />
 
-          <div className="rounded-2xl bg-[#0d131f] border border-slate-800/90 p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-200 flex items-center gap-2">
+          <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-[#23232a] pb-2.5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0] flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-400" />
                 <span>{currentModeSpec.name} Leaderboard</span>
               </h3>
-              <span className="text-[10px] font-mono text-slate-500">RANKED BENCHMARKS</span>
+              <span className="text-[10px] font-mono text-[#727280]">RANKED BENCHMARKS</span>
             </div>
 
             <div className="space-y-1.5">
@@ -1691,12 +1691,12 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                   key={`${row.name}-${idx}`}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs ${
                     row.isUser
-                      ? 'bg-cyan-500/15 border-cyan-400/50 text-cyan-100'
-                      : 'bg-slate-950/60 border-slate-800/80 text-slate-300'
+                      ? 'bg-[#202028] border-[#3d3d4a] text-white'
+                      : 'bg-[#0f0f13] border-[#222228] text-[#d0d0d8]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-5 text-center font-mono font-bold text-slate-500">#{idx + 1}</span>
+                    <span className="w-5 text-center font-mono font-bold text-[#727280]">#{idx + 1}</span>
                     <span className="font-bold">{row.name}</span>
                   </div>
                   <div className="flex items-center gap-3 font-mono text-[11px]">
@@ -1711,14 +1711,14 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#0d131f] border border-slate-800/90 p-4 space-y-3 flex-1">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-200">Recent Training Runs</h3>
-              <span className="text-[10px] font-mono text-slate-500">{aimHistory.length} LOGGED</span>
+          <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-3 flex-1">
+            <div className="flex items-center justify-between border-b border-[#23232a] pb-2">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0]">Recent Training Runs</h3>
+              <span className="text-[10px] font-mono text-[#727280]">{aimHistory.length} LOGGED</span>
             </div>
 
             {aimHistory.length === 0 ? (
-              <div className="py-10 text-center text-xs text-slate-500">
+              <div className="py-10 text-center text-xs text-[#727280]">
                 Complete any session in The Range to track your score progression, accuracy, and reaction speed.
               </div>
             ) : (
@@ -1726,18 +1726,18 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                 {aimHistory.slice(0, 12).map((run) => (
                   <div
                     key={run.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs"
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#0e0e11] border border-[#222228] text-xs"
                   >
                     <div>
-                      <div className="font-bold text-slate-200 capitalize">
-                        {run.mode} <span className="text-[10px] font-mono text-slate-500">• {run.crosshairName}</span>
+                      <div className="font-bold text-[#ececf0] capitalize">
+                        {run.mode} <span className="text-[10px] font-mono text-[#727280]">• {run.crosshairName}</span>
                       </div>
-                      <div className="text-[10px] font-mono text-slate-500">
+                      <div className="text-[10px] font-mono text-[#727280]">
                         {run.date} • {run.hits} hits • {run.avgReactionMs}ms avg
                       </div>
                     </div>
                     <div className="text-right font-mono">
-                      <div className="font-bold text-cyan-300">{run.score.toLocaleString()}</div>
+                      <div className="font-bold text-[#f4f4f6]">{run.score.toLocaleString()}</div>
                       <div className="text-[10px] text-emerald-400">{run.accuracy}% acc</div>
                     </div>
                   </div>

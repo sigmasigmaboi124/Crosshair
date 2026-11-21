@@ -17,21 +17,21 @@ export const App: React.FC = () => {
   const store = useAppStore();
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#07090e] text-slate-100 overflow-hidden select-none">
+    <div className="h-screen w-screen flex flex-col bg-[#0c0c0e] text-[#f4f4f6] overflow-hidden select-none">
       <TitleBar store={store} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         <Sidebar store={store} />
 
-        <main className="flex-1 min-w-0 min-h-0 bg-[#080b12] bg-optics-grid overflow-hidden relative">
+        <main className="flex-1 min-w-0 min-h-0 bg-[#0c0c0e] overflow-hidden relative">
           {store.activeTab === 'designer' && <DesignerView store={store} />}
           {store.activeTab === 'community' && <CommunityView store={store} />}
           {store.activeTab === 'profiles' && <ProfilesView store={store} />}
           {store.activeTab === 'aim-trainer' && (
             <Suspense
               fallback={
-                <div className="h-full w-full flex items-center justify-center text-xs font-mono text-cyan-300">
-                  Initializing 3D WebGL Range Engine...
+                <div className="h-full w-full flex items-center justify-center text-xs text-[#8c8c9a]">
+                  Loading 3D Range...
                 </div>
               }
             >
@@ -43,24 +43,27 @@ export const App: React.FC = () => {
           {store.activeTab === 'achievements' && <AchievementsView store={store} />}
           {store.activeTab === 'safety' && <SettingsSafetyView store={store} />}
 
-          {/* Floating Telemetry Toast Stack */}
+          {/* Minimal Floating Toast */}
           {store.toasts.length > 0 && (
-            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-xs">
+            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-1.5 pointer-events-none max-w-[270px]">
               {store.toasts.map((toast) => {
-                const borderColor = {
-                  cyan: 'border-cyan-400/60 bg-[#09121f]/95 text-cyan-200',
-                  emerald: 'border-emerald-400/60 bg-[#081915]/95 text-emerald-200',
-                  amber: 'border-amber-400/60 bg-[#1a1409]/95 text-amber-200',
-                  rose: 'border-rose-400/60 bg-[#1c0b11]/95 text-rose-200',
+                const dotColor = {
+                  cyan: 'bg-white',
+                  emerald: 'bg-emerald-400',
+                  amber: 'bg-amber-400',
+                  rose: 'bg-rose-400',
                 }[toast.tone];
 
                 return (
                   <div
                     key={toast.id}
-                    className={`rounded-xl border px-3.5 py-2.5 backdrop-blur-md shadow-xl shadow-black/50 ${borderColor}`}
+                    className="rounded-lg bg-[#18181d]/95 border border-[#2c2c34] px-3 py-2 shadow-xl shadow-black/50 flex items-start gap-2.5"
                   >
-                    <div className="text-[11px] font-black uppercase tracking-wider">{toast.title}</div>
-                    <div className="text-xs text-slate-200 mt-0.5">{toast.message}</div>
+                    <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${dotColor}`} />
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-[#f4f4f6] leading-tight">{toast.title}</div>
+                      <div className="text-[11px] text-[#9898a6] mt-0.5 leading-snug">{toast.message}</div>
+                    </div>
                   </div>
                 );
               })}

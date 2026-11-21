@@ -73,17 +73,17 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden gap-3.5">
       {/* Header */}
-      <div className="rounded-2xl bg-[#0d121d] border border-slate-800/90 p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-black text-white flex items-center gap-2">
             <span>Saved Armory & Per-Game Profiles</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39]">
               UNLIMITED SLOTS
             </span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Switch profiles instantly with <span className="font-mono text-cyan-300">Alt+1..9</span> or cycle using{' '}
-            <span className="font-mono text-cyan-300">Alt+[ / Alt+]</span>.
+          <p className="text-xs text-[#9696a4] mt-0.5">
+            Switch profiles instantly with <span className="font-mono text-[#f4f4f6]">Alt+1..9</span> or cycle using{' '}
+            <span className="font-mono text-[#f4f4f6]">Alt+[ / Alt+]</span>.
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="New profile name..."
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700/80 text-xs text-white focus:outline-none focus:border-cyan-400 w-44"
+              className="px-3 py-1.5 rounded-xl bg-[#0e0e11] border border-[#2a2a33] text-xs text-white focus:outline-none focus:border-[#525260] w-44"
             />
             <button
               type="button"
@@ -102,7 +102,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                 saveCurrentAsProfile(newName || undefined, false);
                 setNewName('');
               }}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-bold text-xs flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Save Current
             </button>
@@ -111,20 +111,20 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
           <button
             type="button"
             onClick={handleExportPack}
-            className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-emerald-400" /> Backup JSON
           </button>
 
-          <label className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-cyan-400" /> Import Pack
+          <label className="px-3 py-1.5 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] flex items-center gap-1.5 cursor-pointer">
+            <Upload className="w-3.5 h-3.5 text-[#a1a1ad]" /> Import Pack
             <input type="file" accept=".json" className="hidden" onChange={handleImportPack} />
           </label>
         </div>
       </div>
 
       {/* Optional Per-Game Auto-Switch Banner */}
-      <div className="rounded-xl bg-[#0e1422] border border-slate-800/90 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="rounded-xl bg-[#141418] border border-[#23232a] p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex-1">
           <ToggleRow
             label="Opt-In Per-Game Auto-Profile Switcher (Passive Window Title Match)"
@@ -135,7 +135,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
           />
         </div>
         {settings.autoSwitchPerGame && (
-          <div className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400 shrink-0 max-w-xs truncate">
+          <div className="px-3 py-2 rounded-lg bg-[#0e0e11] border border-[#23232a] text-[11px] font-mono text-[#9696a4] shrink-0 max-w-xs truncate">
             Active Window: <span className="text-emerald-300">{foregroundWindowTitle || 'Monitoring...'}</span>
           </div>
         )}
@@ -148,14 +148,14 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
           return (
             <div
               key={profile.id}
-              className={`rounded-2xl bg-[#0d131f] border p-3.5 flex flex-col xl:flex-row xl:items-center gap-4 transition ${
+              className={`rounded-2xl bg-[#141418] border p-3.5 flex flex-col xl:flex-row xl:items-center gap-4 transition ${
                 isActive
-                  ? 'border-cyan-400/65 shadow-[0_0_20px_rgba(0,240,255,0.1)]'
-                  : 'border-slate-800/90 hover:border-slate-700'
+                  ? 'border-white/35'
+                  : 'border-[#23232a] hover:border-[#2c2c35]'
               }`}
             >
               {/* Miniature Stage */}
-              <div className="w-24 h-20 rounded-xl bg-[radial-gradient(circle_at_50%_50%,#1b2334_0%,#090c14_80%)] border border-slate-800 flex items-center justify-center shrink-0">
+              <div className="w-24 h-20 rounded-xl bg-[#101014] border border-[#23232a] flex items-center justify-center shrink-0">
                 <MiniCrosshairCanvas config={profile.config} size={78} zoom={1.25} />
               </div>
 
@@ -164,14 +164,14 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-sm font-bold text-white">{profile.config.name}</h3>
                   {isActive && (
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-200 border border-cyan-400/45 flex items-center gap-1">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#25252e] text-white border border-[#3e3e4b] flex items-center gap-1">
                       <Check className="w-3 h-3" /> ACTIVE OVERLAY
                     </span>
                   )}
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#18181e] border border-[#23232a] text-[#9696a4]">
                     ADS: {profile.config.animation.adsAction.toUpperCase()}
                   </span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#18181e] border border-[#23232a] text-[#9696a4]">
                     Offset ({profile.config.position.offsetX}, {profile.config.position.offsetY})
                   </span>
                 </div>
@@ -179,7 +179,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                 {/* Quick Slot + Monitor + Game Matchers */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-slate-400 shrink-0">Quick Slot:</span>
+                    <span className="text-[11px] text-[#9696a4] shrink-0">Quick Slot:</span>
                     <select
                       value={profile.quickSlot === null ? '' : String(profile.quickSlot)}
                       onChange={(e) =>
@@ -187,7 +187,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                           quickSlot: e.target.value === '' ? null : Number(e.target.value),
                         })
                       }
-                      className="flex-1 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-cyan-300"
+                      className="flex-1 px-2 py-1 rounded-lg bg-[#0e0e11] border border-[#23232a] text-[11px] font-mono text-[#f4f4f6]"
                     >
                       <option value="">None</option>
                       {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((slot) => (
@@ -199,13 +199,13 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Monitor className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <Monitor className="w-3.5 h-3.5 text-[#727280] shrink-0" />
                     <select
                       value={profile.monitorIndex}
                       onChange={(e) =>
                         updateProfileMeta(profile.id, { monitorIndex: Number(e.target.value) })
                       }
-                      className="flex-1 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300"
+                      className="flex-1 px-2 py-1 rounded-lg bg-[#0e0e11] border border-[#23232a] text-[11px] text-[#d0d0d8]"
                     >
                       {monitors.map((m) => (
                         <option key={m.index} value={m.index}>
@@ -216,7 +216,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Gamepad className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <Gamepad className="w-3.5 h-3.5 text-[#727280] shrink-0" />
                     <input
                       type="text"
                       value={profile.gameTitleMatchers.join(', ')}
@@ -229,7 +229,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                         })
                       }
                       placeholder="Game titles: VALORANT, Apex..."
-                      className="flex-1 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-cyan-400"
+                      className="flex-1 px-2 py-1 rounded-lg bg-[#0e0e11] border border-[#23232a] text-[11px] text-[#ececf0] placeholder:text-slate-600 focus:outline-none focus:border-[#525260]"
                     />
                   </div>
                 </div>
@@ -242,8 +242,8 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                   onClick={() => selectProfile(profile.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                     isActive
-                      ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-200'
-                      : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
+                      ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-200'
+                      : 'bg-[#f4f4f6] hover:bg-white text-[#0c0c0e]'
                   }`}
                 >
                   {isActive ? 'Loaded' : 'Activate'}
@@ -254,7 +254,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                     selectProfile(profile.id, true);
                     store.setActiveTab('designer');
                   }}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-300 cursor-pointer"
+                  className="p-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[#d0d0d8] hover:text-white cursor-pointer"
                   title="Edit in Precision Designer"
                 >
                   <Sliders className="w-4 h-4" />
@@ -266,7 +266,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                     bumpStat((s) => ({ ...s, codesExported: s.codesExported + 1 }));
                     pushToast('Share Code Copied', profile.config.name, 'cyan');
                   }}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-300 cursor-pointer"
+                  className="p-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[#d0d0d8] hover:text-white cursor-pointer"
                   title="Copy CX1 Share Code"
                 >
                   <Copy className="w-4 h-4" />
@@ -275,7 +275,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
                   type="button"
                   onClick={() => deleteProfile(profile.id)}
                   disabled={profiles.length <= 1}
-                  className="p-2 rounded-xl bg-slate-900 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-500/40 text-slate-400 hover:text-rose-300 disabled:opacity-30 cursor-pointer"
+                  className="p-2 rounded-xl bg-[#18181e] hover:bg-rose-500/20 border border-[#2c2c35] hover:border-rose-500/40 text-[#9696a4] hover:text-rose-300 disabled:opacity-30 cursor-pointer"
                   title="Delete Profile"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -38,24 +38,24 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      <div className="rounded-2xl bg-[#0d121d] border border-slate-800/90 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-black text-white flex items-center gap-2">
-            <Monitor className="w-4 h-4 text-cyan-400" />
+            <Monitor className="w-4 h-4 text-[#a1a1ad]" />
             <span>Multi-Monitor Placement & Pixel Alignment</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#9696a4] mt-0.5">
             Select which physical display renders your overlay. Mixed Windows DPI scaling (100%–200%) is automatically compensated in native physical pixels.
           </p>
         </div>
-        <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 self-start md:self-center">
+        <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39] self-start md:self-center">
           {monitors.length} DISPLAY{monitors.length === 1 ? '' : 'S'} DETECTED
         </span>
       </div>
 
       {/* Visual Multi-Monitor Interactive Map */}
       <SectionCard title="Interactive Display Topology" badge="CLICK TO ASSIGN">
-        <div className="relative h-72 w-full rounded-xl bg-[#070a11] bg-optics-grid border border-slate-800/90 overflow-hidden flex items-center justify-center p-5">
+        <div className="relative h-72 w-full rounded-xl bg-[#0e0e11] border border-[#23232a] overflow-hidden flex items-center justify-center p-5">
           <div
             className="relative"
             style={{
@@ -88,18 +88,18 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
                   <div
                     className={`w-full h-full rounded-xl border-2 flex flex-col items-center justify-center px-1.5 text-center overflow-hidden relative transition-all ${
                       active
-                        ? 'bg-cyan-500/15 border-cyan-400 shadow-[0_0_24px_rgba(0,240,255,0.28)]'
-                        : 'bg-[#0e1524] border-slate-700 hover:border-slate-500'
+                        ? 'bg-[#202028] border-[#ff5526]'
+                        : 'bg-[#16161b] border-[#2c2c35] hover:border-[#464654]'
                     }`}
                   >
-                    {active && <Crosshair className="w-5 h-5 text-cyan-300 mb-0.5 shrink-0 animate-pulse" />}
+                    {active && <Crosshair className="w-5 h-5 text-[#f4f4f6] mb-0.5 shrink-0 animate-pulse" />}
                     <div className="text-[11px] font-black text-white leading-tight truncate max-w-full">
                       D{m.index + 1} {m.primary ? '★' : ''}
                     </div>
-                    <div className="text-[9px] font-mono text-slate-400 leading-tight mt-0.5 truncate max-w-full">
+                    <div className="text-[9px] font-mono text-[#9696a4] leading-tight mt-0.5 truncate max-w-full">
                       {m.width}×{m.height}
                     </div>
-                    <div className="text-[9px] font-mono text-cyan-400/80 leading-tight">
+                    <div className="text-[9px] font-mono text-[#a1a1ad]/80 leading-tight">
                       {Math.round(m.scaleFactor * 100)}% DPI
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
       {/* Precision Pixel Offset & Nudge Pad */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SectionCard title="Exact X / Y Center Offset">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#9696a4]">
             Shift the reticle away from absolute screen center for games with offset hipfire or third-person cameras.
           </p>
           <SliderRow
@@ -138,9 +138,9 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
             <button
               type="button"
               onClick={() => updateActiveConfig((c) => ({ ...c, position: { ...c.position, offsetX: 0, offsetY: 0 } }))}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-xs font-semibold text-[#ececf0] flex items-center gap-1.5 cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-cyan-400" /> Reset to Exact Center (0, 0)
+              <RotateCcw className="w-3.5 h-3.5 text-[#a1a1ad]" /> Reset to Exact Center (0, 0)
             </button>
           </div>
         </SectionCard>
@@ -152,7 +152,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
               <button
                 type="button"
                 onClick={() => nudge(0, -1)}
-                className="h-10 rounded-xl bg-slate-900 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 flex items-center justify-center text-slate-200 cursor-pointer"
+                className="h-10 rounded-xl bg-[#18181e] hover:bg-cyan-500/20 border border-[#2c2c35] hover:border-[#4b4b58] flex items-center justify-center text-[#ececf0] cursor-pointer"
                 title="Up 1px"
               >
                 <ArrowUp className="w-4 h-4" />
@@ -161,7 +161,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
               <button
                 type="button"
                 onClick={() => nudge(-1, 0)}
-                className="h-10 rounded-xl bg-slate-900 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 flex items-center justify-center text-slate-200 cursor-pointer"
+                className="h-10 rounded-xl bg-[#18181e] hover:bg-cyan-500/20 border border-[#2c2c35] hover:border-[#4b4b58] flex items-center justify-center text-[#ececf0] cursor-pointer"
                 title="Left 1px"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -169,7 +169,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
               <button
                 type="button"
                 onClick={() => updateActiveConfig((c) => ({ ...c, position: { ...c.position, offsetX: 0, offsetY: 0 } }))}
-                className="h-10 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-[10px] font-mono font-bold text-cyan-200 cursor-pointer"
+                className="h-10 rounded-xl bg-cyan-500/15 border border-[#3a3a46] text-[10px] font-mono font-bold text-[#e4e4e8] cursor-pointer"
                 title="Reset (0,0)"
               >
                 0,0
@@ -177,7 +177,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
               <button
                 type="button"
                 onClick={() => nudge(1, 0)}
-                className="h-10 rounded-xl bg-slate-900 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 flex items-center justify-center text-slate-200 cursor-pointer"
+                className="h-10 rounded-xl bg-[#18181e] hover:bg-cyan-500/20 border border-[#2c2c35] hover:border-[#4b4b58] flex items-center justify-center text-[#ececf0] cursor-pointer"
                 title="Right 1px"
               >
                 <ArrowRight className="w-4 h-4" />
@@ -186,7 +186,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
               <button
                 type="button"
                 onClick={() => nudge(0, 1)}
-                className="h-10 rounded-xl bg-slate-900 hover:bg-cyan-500/20 border border-slate-700 hover:border-cyan-400 flex items-center justify-center text-slate-200 cursor-pointer"
+                className="h-10 rounded-xl bg-[#18181e] hover:bg-cyan-500/20 border border-[#2c2c35] hover:border-[#4b4b58] flex items-center justify-center text-[#ececf0] cursor-pointer"
                 title="Down 1px"
               >
                 <ArrowDown className="w-4 h-4" />
@@ -195,15 +195,15 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
             </div>
 
             <div className="space-y-2 text-xs font-mono">
-              <div className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-slate-500">X OFFSET: </span>
-                <span className="text-cyan-300 font-bold">{activeConfig.position.offsetX}px</span>
+              <div className="px-3 py-2 rounded-xl bg-[#0e0e11] border border-[#23232a]">
+                <span className="text-[#727280]">X OFFSET: </span>
+                <span className="text-[#f4f4f6] font-bold">{activeConfig.position.offsetX}px</span>
               </div>
-              <div className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-slate-500">Y OFFSET: </span>
-                <span className="text-cyan-300 font-bold">{activeConfig.position.offsetY}px</span>
+              <div className="px-3 py-2 rounded-xl bg-[#0e0e11] border border-[#23232a]">
+                <span className="text-[#727280]">Y OFFSET: </span>
+                <span className="text-[#f4f4f6] font-bold">{activeConfig.position.offsetY}px</span>
               </div>
-              <div className="text-[10px] text-slate-500 max-w-[180px] leading-snug">
+              <div className="text-[10px] text-[#727280] max-w-[180px] leading-snug">
                 Nudge live while in-game without Alt-Tabbing using Alt + Arrow Keys.
               </div>
             </div>
