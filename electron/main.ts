@@ -71,13 +71,16 @@ function getBackupStorePath(): string {
 }
 
 function getBridgeExecutablePath(): string {
-  const prodPath = path.join(process.resourcesPath || '', 'WinBridge', 'WinBridge.exe');
-  if (app.isPackaged && fs.existsSync(prodPath)) return prodPath;
-  const pubPath = path.join(__dirname, '..', 'native', 'WinBridge', 'publish', 'WinBridge.exe');
-  if (fs.existsSync(pubPath)) return pubPath;
-  const devPath = path.join(__dirname, '..', 'native', 'WinBridge', 'out', 'WinBridge.exe');
-  if (fs.existsSync(devPath)) return devPath;
-  return prodPath;
+  const names = ['ZeroPointOverlay.exe', 'WinBridge.exe'];
+  for (const name of names) {
+    const prodPath = path.join(process.resourcesPath || '', 'WinBridge', name);
+    if (app.isPackaged && fs.existsSync(prodPath)) return prodPath;
+    const pubPath = path.join(__dirname, '..', 'native', 'WinBridge', 'publish', name);
+    if (fs.existsSync(pubPath)) return pubPath;
+    const devPath = path.join(__dirname, '..', 'native', 'WinBridge', 'out', name);
+    if (fs.existsSync(devPath)) return devPath;
+  }
+  return path.join(process.resourcesPath || '', 'WinBridge', 'ZeroPointOverlay.exe');
 }
 
 function sendBridgeCommand(obj: Record<string, unknown>): void {

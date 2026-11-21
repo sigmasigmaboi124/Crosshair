@@ -421,6 +421,7 @@ public sealed class NativeOverlayForm : Form
 
     public NativeOverlayForm()
     {
+        Text = "ZeroPoint Crosshair Overlay";
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
