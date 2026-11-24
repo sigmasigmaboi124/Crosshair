@@ -73,17 +73,12 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden gap-3.5">
       {/* Header */}
-      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-black text-white flex items-center gap-2">
-            <span>Saved Armory & Per-Game Profiles</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39]">
-              UNLIMITED SLOTS
-            </span>
-          </h2>
-          <p className="text-xs text-[#9696a4] mt-0.5">
-            Switch profiles instantly with <span className="font-mono text-[#f4f4f6]">Alt+1..9</span> or cycle using{' '}
-            <span className="font-mono text-[#f4f4f6]">Alt+[ / Alt+]</span>.
+          <h2 className="text-sm font-semibold text-white">Saved profiles</h2>
+          <p className="text-xs text-[#8c8c9a] mt-0.5">
+            Switch profiles with <code className="font-mono text-[#d0d0d8]">Alt+1..9</code> or cycle with{' '}
+            <code className="font-mono text-[#d0d0d8]">Alt+[ / Alt+]</code>.
           </p>
         </div>
 
@@ -148,7 +143,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({ store }) => {
           return (
             <div
               key={profile.id}
-              className={`rounded-2xl bg-[#141418] border p-3.5 flex flex-col xl:flex-row xl:items-center gap-4 transition ${
+              className={`rounded-lg bg-[#141418] border p-3.5 flex flex-col xl:flex-row xl:items-center gap-4 transition ${
                 isActive
                   ? 'border-white/35'
                   : 'border-[#23232a] hover:border-[#2c2c35]'

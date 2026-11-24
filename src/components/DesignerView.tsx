@@ -323,21 +323,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {subTab === 'geometry' && (
             <>
               <SectionCard
-                title="Primary Crosshair Lines"
-                badge={activeConfig.lines.enabled ? 'ACTIVE' : 'OFF'}
-                rightSlot={
-                  <button
-                    type="button"
-                    onClick={() => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, enabled: !c.lines.enabled } }))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
-                      activeConfig.lines.enabled
-                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
-                        : 'bg-[#202027] text-[#9696a4]'
-                    }`}
-                  >
-                    {activeConfig.lines.enabled ? 'Enabled' : 'Disabled'}
-                  </button>
-                }
+                title="Primary lines"
+                enabled={activeConfig.lines.enabled}
+                onToggleEnabled={(v) => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, enabled: v } }))}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <SliderRow
@@ -416,22 +404,22 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-1">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 pt-1 border-t border-[#1f1f26]">
                   <ToggleRow
-                    label="T-Shape Mode"
-                    description="Removes top arm for clear headshots"
+                    label="T-shape"
+                    description="Hides top line"
                     checked={activeConfig.lines.tShape}
                     onChange={(v) => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, tShape: v } }))}
                   />
                   <ToggleRow
-                    label="Split H / V Axes"
-                    description="Independent horizontal & vertical dims"
+                    label="Split H / V"
+                    description="Separate axis lengths"
                     checked={activeConfig.lines.splitAxes}
                     onChange={(v) => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, splitAxes: v } }))}
                   />
                   <ToggleRow
-                    label="Rounded Caps"
-                    description="Smooth pill-shaped arm ends"
+                    label="Rounded caps"
+                    description="Soft arm ends"
                     checked={activeConfig.lines.roundedCaps}
                     onChange={(v) => updateActiveConfig((c) => ({ ...c, lines: { ...c.lines, roundedCaps: v } }))}
                   />
@@ -474,22 +462,10 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
               </SectionCard>
 
               <SectionCard
-                title="Secondary Outer Lines (Dynamic Stage)"
-                badge={activeConfig.outerLines.enabled ? 'ON' : 'OFF'}
-                rightSlot={
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateActiveConfig((c) => ({ ...c, outerLines: { ...c.outerLines, enabled: !c.outerLines.enabled } }))
-                    }
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
-                      activeConfig.outerLines.enabled
-                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
-                        : 'bg-[#202027] text-[#9696a4]'
-                    }`}
-                  >
-                    {activeConfig.outerLines.enabled ? 'Enabled' : 'Disabled'}
-                  </button>
+                title="Outer lines"
+                enabled={activeConfig.outerLines.enabled}
+                onToggleEnabled={(v) =>
+                  updateActiveConfig((c) => ({ ...c, outerLines: { ...c.outerLines, enabled: v } }))
                 }
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -570,21 +546,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {subTab === 'dot-shapes' && (
             <>
               <SectionCard
-                title="Center Dot"
-                badge={activeConfig.dot.enabled ? activeConfig.dot.shape.toUpperCase() : 'OFF'}
-                rightSlot={
-                  <button
-                    type="button"
-                    onClick={() => updateActiveConfig((c) => ({ ...c, dot: { ...c.dot, enabled: !c.dot.enabled } }))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
-                      activeConfig.dot.enabled
-                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
-                        : 'bg-[#202027] text-[#9696a4]'
-                    }`}
-                  >
-                    {activeConfig.dot.enabled ? 'Enabled' : 'Disabled'}
-                  </button>
-                }
+                title="Center dot"
+                enabled={activeConfig.dot.enabled}
+                onToggleEnabled={(v) => updateActiveConfig((c) => ({ ...c, dot: { ...c.dot, enabled: v } }))}
               >
                 <div className="grid grid-cols-4 gap-2">
                   {(['circle', 'square', 'diamond', 'plus'] as DotShape[]).map((shape) => (
@@ -657,21 +621,9 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
               </SectionCard>
 
               <SectionCard
-                title="Tactical Rings, Brackets, Arcs & Chevrons"
-                badge={activeConfig.ring.enabled ? activeConfig.ring.style.toUpperCase() : 'OFF'}
-                rightSlot={
-                  <button
-                    type="button"
-                    onClick={() => updateActiveConfig((c) => ({ ...c, ring: { ...c.ring, enabled: !c.ring.enabled } }))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold cursor-pointer ${
-                      activeConfig.ring.enabled
-                        ? 'bg-[#25252e] text-white border border-[#3e3e4b]'
-                        : 'bg-[#202027] text-[#9696a4]'
-                    }`}
-                  >
-                    {activeConfig.ring.enabled ? 'Enabled' : 'Disabled'}
-                  </button>
-                }
+                title="Rings, brackets & shapes"
+                enabled={activeConfig.ring.enabled}
+                onToggleEnabled={(v) => updateActiveConfig((c) => ({ ...c, ring: { ...c.ring, enabled: v } }))}
               >
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {(
@@ -771,7 +723,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {/* TAB 3: OUTLINE, GLOW & CUSTOM IMAGE UPLOAD */}
           {subTab === 'outline-image' && (
             <>
-              <SectionCard title="Contrast Outline & Optical Glow">
+              <SectionCard title="Outline & glow">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <ToggleRow
                     label="Crisp Vector Outline"
@@ -835,10 +787,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 )}
               </SectionCard>
 
-              <SectionCard
-                title="Custom Image / Animated Sprite Upload"
-                badge="PNG / SVG / WEBP / GIF"
-              >
+              <SectionCard title="Custom image" subtitle="PNG, SVG, WebP, or animated GIF">
                 <p className="text-xs text-[#9696a4]">
                   Upload any transparent PNG, SVG, WebP, or GIF image to render directly on your overlay. You can use it standalone or blended underneath your vector layers.
                 </p>
@@ -925,17 +874,13 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {subTab === 'dynamics' && (
             <>
               <SectionCard
-                title="Firing Reaction (LMB / Controller RT)"
-                badge={activeConfig.animation.firingEnabled ? activeConfig.animation.firingType.toUpperCase() : 'STATIC'}
+                title="Firing reaction"
+                subtitle="Reacts to left-click or controller RT"
+                enabled={activeConfig.animation.firingEnabled}
+                onToggleEnabled={(v) =>
+                  updateActiveConfig((c) => ({ ...c, animation: { ...c.animation, firingEnabled: v } }))
+                }
               >
-                <ToggleRow
-                  label="Enable Reactive Firing Animation"
-                  description="Reacts in real-time to mouse clicks & controller triggers via passive OS input"
-                  checked={activeConfig.animation.firingEnabled}
-                  onChange={(v) =>
-                    updateActiveConfig((c) => ({ ...c, animation: { ...c.animation, firingEnabled: v } }))
-                  }
-                />
 
                 <div className="grid grid-cols-3 sm:grid-cols-7 gap-1.5">
                   {(
@@ -1044,10 +989,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 )}
               </SectionCard>
 
-              <SectionCard
-                title="Smart ADS / Right-Click Behavior"
-                badge={activeConfig.animation.adsAction.toUpperCase()}
-              >
+              <SectionCard title="ADS behavior" subtitle="Right-click or controller left trigger">
                 <div className="grid grid-cols-5 gap-1.5">
                   {(
                     [
@@ -1185,7 +1127,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 </div>
               </SectionCard>
 
-              <SectionCard title="Movement Spread & Continuous Idle Effects" badge="EZ REACTIVE">
+              <SectionCard title="Movement spread & idle animation">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <ToggleRow
                     label="WASD / Left-Stick Movement Bloom"
@@ -1274,7 +1216,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
           {/* TAB 5: POSITION OFFSET, SCALE & EXPORT */}
           {subTab === 'position-share' && (
             <>
-              <SectionCard title="Screen Position Offset & Optical Scale">
+              <SectionCard title="Position offset & scale">
                 <p className="text-xs text-[#9696a4]">
                   Fine-tune pixel alignment for games with non-centered third-person or weapon-bob hipfire cameras. Tip: You can also nudge 1px live in-game using{' '}
                   <span className="font-mono text-[#f4f4f6]">Alt + Arrow Keys</span>!
@@ -1338,7 +1280,7 @@ export const DesignerView: React.FC<DesignerViewProps> = ({ store }) => {
                 </div>
               </SectionCard>
 
-              <SectionCard title="Instant Share Code & Asset Export">
+              <SectionCard title="Share code & file export">
                 <div className="space-y-2">
                   <label className="text-[11px] font-medium text-[#9696a4]">Your Unique Share Code (CX1)</label>
                   <div className="flex gap-2">

@@ -779,16 +779,17 @@ internal static class Program
         {
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             g.Clear(Color.Transparent);
-            using var bg = new SolidBrush(Color.FromArgb(240, 9, 14, 24));
-            g.FillEllipse(bg, 2, 2, 28, 28);
-            using var ring = new Pen(Color.FromArgb(255, 0, 240, 255), 2.5f);
-            g.DrawEllipse(ring, 3, 3, 26, 26);
-            using var arm = new Pen(Color.FromArgb(255, 0, 245, 255), 2.2f);
+            using var bg = new SolidBrush(Color.FromArgb(250, 20, 20, 24));
+            using var border = new Pen(Color.FromArgb(255, 58, 58, 68), 1.5f);
+            g.FillRectangle(bg, 3, 3, 26, 26);
+            g.DrawRectangle(border, 3, 3, 26, 26);
+            using var arm = new Pen(Color.FromArgb(255, 244, 244, 246), 2.4f);
             g.DrawLine(arm, 16, 6, 16, 12);
             g.DrawLine(arm, 16, 20, 16, 26);
             g.DrawLine(arm, 6, 16, 12, 16);
             g.DrawLine(arm, 20, 16, 26, 16);
-            g.FillEllipse(Brushes.White, 14, 14, 4, 4);
+            using var dot = new SolidBrush(Color.FromArgb(255, 255, 85, 38));
+            g.FillEllipse(dot, 13.8f, 13.8f, 4.4f, 4.4f);
         }
         IntPtr hIcon = bmp.GetHicon();
         return Icon.FromHandle(hIcon);

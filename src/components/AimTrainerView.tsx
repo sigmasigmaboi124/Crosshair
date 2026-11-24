@@ -1233,14 +1233,14 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
         {/* Pause / Pointer Unlock Overlay */}
         {!isPointerLocked && (
           <div className="absolute inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center z-20">
-            <div className="rounded-2xl bg-[#141418] border border-[#3a3a46] p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-[#3a3a46] flex items-center justify-center mx-auto">
-                <Crosshair className="w-6 h-6 text-[#f4f4f6]" />
+            <div className="rounded-lg bg-[#141418] border border-[#2c2c35] p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+              <div className="w-10 h-10 rounded-lg bg-[#1c1c22] border border-[#2b2b34] flex items-center justify-center mx-auto">
+                <Crosshair className="w-5 h-5 text-[#e4e4e8]" />
               </div>
               <div>
-                <h3 className="text-base font-black text-white">{currentModeSpec.name}</h3>
-                <p className="text-xs text-[#9696a4] mt-1">
-                  Click Resume to lock mouse cursor into 3D first-person view. Hold Right-Click to test ADS zoom & crosshair behavior.
+                <h3 className="text-sm font-semibold text-white">{currentModeSpec.name}</h3>
+                <p className="text-xs text-[#8c8c9a] mt-1">
+                  Click Resume to lock the cursor into first-person view. Hold right-click to test ADS behavior.
                 </p>
               </div>
               <div className="flex flex-col gap-2">
@@ -1264,9 +1264,9 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       // Ignore
                     }
                   }}
-                  className="w-full py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider cursor-pointer"
+                  className="w-full py-2 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs cursor-pointer"
                 >
-                  CLICK TO RESUME AIMING
+                  Resume
                 </button>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -1299,15 +1299,15 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   if (phase === 'summary' && lastResult) {
     return (
       <div className="h-full flex items-center justify-center p-6 overflow-y-auto">
-        <div className="max-w-xl w-full rounded-2xl bg-[#141418] border border-[#2e2e38] p-6 space-y-5 shadow-2xl">
+        <div className="max-w-xl w-full rounded-lg bg-[#141418] border border-[#2e2e38] p-6 space-y-5 shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#23232a] pb-4">
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#a1a1ad]">
                 SESSION DEBRIEF • {lastResult.mode.toUpperCase()}
               </span>
-              <h2 className="text-xl font-black text-white mt-0.5">Range Run Complete</h2>
+              <h2 className="text-xl font-semibold text-white mt-0.5">Range Run Complete</h2>
             </div>
-            <span className={`px-3.5 py-1.5 rounded-xl border text-xs font-black tracking-wider ${RANK_COLORS[lastResult.rank]}`}>
+            <span className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold tracking-wider ${RANK_COLORS[lastResult.rank]}`}>
               {lastResult.rank.toUpperCase()}
             </span>
           </div>
@@ -1315,19 +1315,19 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
               <div className="text-[10px] font-mono text-[#727280]">FINAL SCORE</div>
-              <div className="text-xl font-black font-mono text-[#f4f4f6] mt-1">{lastResult.score.toLocaleString()}</div>
+              <div className="text-xl font-semibold font-mono text-[#f4f4f6] mt-1">{lastResult.score.toLocaleString()}</div>
             </div>
             <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
               <div className="text-[10px] font-mono text-[#727280]">ACCURACY</div>
-              <div className="text-xl font-black font-mono text-emerald-300 mt-1">{lastResult.accuracy}%</div>
+              <div className="text-xl font-semibold font-mono text-emerald-300 mt-1">{lastResult.accuracy}%</div>
             </div>
             <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
               <div className="text-[10px] font-mono text-[#727280]">AVG REACTION</div>
-              <div className="text-xl font-black font-mono text-white mt-1">{lastResult.avgReactionMs}ms</div>
+              <div className="text-xl font-semibold font-mono text-white mt-1">{lastResult.avgReactionMs}ms</div>
             </div>
             <div className="rounded-xl bg-[#0e0e11] border border-[#23232a] p-3 text-center">
               <div className="text-[10px] font-mono text-[#727280]">BEST STREAK</div>
-              <div className="text-xl font-black font-mono text-amber-300 mt-1">{lastResult.bestStreak}</div>
+              <div className="text-xl font-semibold font-mono text-amber-300 mt-1">{lastResult.bestStreak}</div>
             </div>
           </div>
 
@@ -1345,7 +1345,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             <button
               type="button"
               onClick={() => startSession(lastResult.mode)}
-              className="flex-1 py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" /> PLAY AGAIN
             </button>
@@ -1365,20 +1365,12 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
   // =================== LOBBY VIEW ===================
   return (
     <div className="h-full flex flex-col p-4 overflow-y-auto gap-4">
-      {/* Hero Launch Banner */}
-      <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      {/* Lobby Header */}
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
-              BUILT-IN 3D WEBGL AIM ENGINE
-            </span>
-            <span className="text-[10px] font-mono text-[#9696a4]">
-              USING LIVE RETICLE: <strong className="text-[#f4f4f6]">{activeConfig.name}</strong>
-            </span>
-          </div>
-          <h2 className="text-xl font-black text-white mt-1.5 tracking-wide">The Range — 3D Aim Trainer & Crosshair Lab</h2>
-          <p className="text-xs text-[#9696a4] mt-0.5 max-w-2xl">
-            Warm up flicks, micro-adjustments, tracking, and target switching using your exact custom crosshair and game sensitivity ({cmPer360} cm/360°).
+          <h2 className="text-base font-semibold text-white">Aim trainer</h2>
+          <p className="text-xs text-[#8c8c9a] mt-0.5 max-w-2xl">
+            Practice flicking, tracking, recoil control, and reaction time with <strong className="text-[#e4e4e8]">{activeConfig.name}</strong> ({cmPer360} cm/360°).
           </p>
         </div>
 
@@ -1386,27 +1378,27 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
           <button
             type="button"
             onClick={() => setShowSettingsDrawer((v) => !v)}
-            className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition ${
+            className={`px-3 py-2 rounded-lg border text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
               showSettingsDrawer
-                ? 'bg-[#25252e] border-[#444452] text-white'
-                : 'bg-[#18181e] border-[#2c2c35] text-[#ececf0] hover:border-[#464654]'
+                ? 'bg-[#25252e] border-[#3d3d4a] text-white'
+                : 'bg-[#18181e] border-[#292932] text-[#d0d0d8] hover:text-white'
             }`}
           >
-            <Settings2 className="w-4 h-4" /> Sens & Arena
+            <Settings2 className="w-3.5 h-3.5" /> Sensitivity & arena
           </button>
           <button
             type="button"
             onClick={() => startSession(selectedMode)}
-            className="px-5 py-2.5 rounded-xl bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs tracking-wider flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Play className="w-4 h-4 fill-slate-950" /> LAUNCH {currentModeSpec.name.toUpperCase()}
+            <Play className="w-3.5 h-3.5 fill-[#0c0c0e]" /> Start {currentModeSpec.name}
           </button>
         </div>
       </div>
 
       {/* Collapsible Sensitivity Converter & Arena Settings */}
       {showSettingsDrawer && (
-        <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="rounded-lg bg-[#141418] border border-[#2c2c35] p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-[#d0d0d8]">Game Sensitivity Profile</label>
             <select
@@ -1611,7 +1603,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                 key={m.id}
                 onClick={() => setSelectedMode(m.id)}
                 onDoubleClick={() => startSession(m.id)}
-                className={`rounded-2xl p-4 border transition cursor-pointer flex flex-col justify-between gap-3 ${
+                className={`rounded-lg p-4 border transition cursor-pointer flex flex-col justify-between gap-3 ${
                   active
                     ? 'bg-[#1b1b21] border-white/35'
                     : 'bg-[#141418] border-[#23232a] hover:border-[#3b3b47]'
@@ -1636,7 +1628,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-sm font-black text-white mt-2 flex items-center gap-1.5">
+                  <h3 className="text-sm font-semibold text-white mt-2 flex items-center gap-1.5">
                     {m.isTracking ? <Zap className="w-4 h-4 text-emerald-400" /> : <Target className="w-4 h-4 text-[#a1a1ad]" />}
                     <span>{m.name}</span>
                   </h3>
@@ -1676,7 +1668,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             modeName={currentModeSpec.name}
           />
 
-          <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-3">
+          <div className="rounded-lg bg-[#141418] border border-[#23232a] p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-[#23232a] pb-2.5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0] flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-400" />
@@ -1711,7 +1703,7 @@ export const AimTrainerView: React.FC<AimTrainerViewProps> = ({ store }) => {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-3 flex-1">
+          <div className="rounded-lg bg-[#141418] border border-[#23232a] p-4 space-y-3 flex-1">
             <div className="flex items-center justify-between border-b border-[#23232a] pb-2">
               <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0]">Recent Training Runs</h3>
               <span className="text-[10px] font-mono text-[#727280]">{aimHistory.length} LOGGED</span>

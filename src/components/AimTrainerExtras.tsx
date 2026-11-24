@@ -166,11 +166,11 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
 
   return (
     <div className="h-full w-full flex flex-col p-4 gap-3 select-none bg-[#0c0c0e]">
-      <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#141418] border border-[#23232a]">
+      <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#141418] border border-[#222229]">
         <div className="flex items-center gap-3">
           <Timer className="w-4 h-4 text-[#a1a1ad]" />
-          <span className="text-xs font-black tracking-wider text-white uppercase">
-            Reaction Time Benchmark ({Math.min(TOTAL_ROUNDS, times.length + (stage === 'go' || stage === 'waiting' ? 1 : 0))}/{TOTAL_ROUNDS})
+          <span className="text-xs font-semibold text-white">
+            Reaction benchmark ({Math.min(TOTAL_ROUNDS, times.length + (stage === 'go' || stage === 'waiting' ? 1 : 0))}/{TOTAL_ROUNDS})
           </span>
           <div className="flex items-center gap-1.5">
             {times.map((ms, i) => (
@@ -209,34 +209,34 @@ export const ReactionBenchmarkView: React.FC<ReactionBenchmarkViewProps> = ({
       <button
         type="button"
         onMouseDown={handlePadMouseDown}
-        className={`flex-1 rounded-3xl border-2 transition-colors duration-75 flex flex-col items-center justify-center gap-3 cursor-pointer ${bgClass}`}
+        className={`flex-1 rounded-xl border transition-colors duration-75 flex flex-col items-center justify-center gap-3 cursor-pointer ${bgClass}`}
       >
-        <Zap className={`w-14 h-14 ${stage === 'go' ? 'text-[#0c0c0e]' : 'text-[#f4f4f6]'}`} />
+        <Zap className={`w-10 h-10 ${stage === 'go' ? 'text-[#0c0c0e]' : 'text-[#a1a1ad]'}`} />
         {stage === 'ready' && (
           <>
-            <div className="text-3xl font-black text-white tracking-wide">CLICK ANYWHERE TO BEGIN</div>
-            <p className="text-sm text-[#9696a4]">Wait for the screen to flash EMERALD GREEN, then click immediately.</p>
+            <div className="text-2xl font-semibold text-white">Click anywhere to begin</div>
+            <p className="text-xs text-[#8c8c9a]">Wait for green, then click as fast as you can.</p>
           </>
         )}
         {stage === 'waiting' && (
           <>
-            <div className="text-3xl font-black text-rose-200 tracking-wider">HOLD STEADY — WAIT FOR GREEN...</div>
-            <p className="text-xs font-mono text-rose-300/75">DO NOT CLICK EARLY</p>
+            <div className="text-2xl font-semibold text-rose-200">Wait for green...</div>
+            <p className="text-xs font-mono text-rose-300/70">Don't click early</p>
           </>
         )}
         {stage === 'go' && (
-          <div className="text-5xl font-black text-[#0c0c0e] tracking-widest">CLICK NOW!</div>
+          <div className="text-4xl font-bold text-[#0c0c0e]">Click!</div>
         )}
         {stage === 'too-early' && (
           <>
-            <div className="text-3xl font-black text-amber-300">TOO EARLY!</div>
-            <p className="text-sm text-amber-100/80">Click anywhere to retry this round.</p>
+            <div className="text-2xl font-semibold text-amber-300">Too early</div>
+            <p className="text-xs text-amber-100/80">Click anywhere to retry this round.</p>
           </>
         )}
         {stage === 'result' && lastMs !== null && (
           <>
-            <div className="text-5xl font-black font-mono text-[#f4f4f6]">{lastMs} ms</div>
-            <p className="text-sm text-[#d0d0d8]">Click anywhere for Round {times.length + 1} of {TOTAL_ROUNDS}</p>
+            <div className="text-4xl font-semibold font-mono tabular-nums text-[#f4f4f6]">{lastMs} ms</div>
+            <p className="text-xs text-[#b4b4c0]">Click anywhere for round {times.length + 1} of {TOTAL_ROUNDS}</p>
           </>
         )}
       </button>
@@ -254,15 +254,15 @@ export const SessionTrendGraph: React.FC<{ records: AimSessionRecord[]; modeName
   const series = [...records].slice(0, 15).reverse();
 
   return (
-    <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 space-y-2.5">
-      <div className="flex items-center justify-between border-b border-[#23232a] pb-2">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-[#ececf0] flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#a1a1ad]" />
-          <span>{modeName} Trend (Score & Accuracy)</span>
+    <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 space-y-2.5">
+      <div className="flex items-center justify-between border-b border-[#1f1f26] pb-2">
+        <h3 className="text-xs font-semibold text-[#ececf0] flex items-center gap-2">
+          <Activity className="w-3.5 h-3.5 text-[#a1a1ad]" />
+          <span>{modeName} trend</span>
         </h3>
         <div className="flex items-center gap-3 text-[10px] font-mono">
-          <span className="text-[#f4f4f6]">● SCORE</span>
-          <span className="text-emerald-300">● ACC %</span>
+          <span className="text-[#e4e4e8]">● Score</span>
+          <span className="text-[#ff5526]">● Acc %</span>
         </div>
       </div>
 

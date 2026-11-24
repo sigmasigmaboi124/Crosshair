@@ -1,4 +1,4 @@
-// Generates high-resolution crisp build/icon.png (256x256) and multi-size build/icon.ico (256, 64, 48, 32, 16)
+// Generates crisp matte-carbon ZeroPoint app icons: build/icon.png (256x256) and multi-size build/icon.ico
 import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
@@ -10,7 +10,6 @@ function renderIconRGBA(size) {
   const rgba = Buffer.alloc(size * size * 4);
   const cx = (size - 1) / 2;
   const cy = (size - 1) / 2;
-  const rMax = size * 0.46;
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -21,9 +20,9 @@ function renderIconRGBA(size) {
       const ax = Math.abs(dx);
       const ay = Math.abs(dy);
 
-      // Rounded-square dark obsidian plate with subtle cyan glow gradient
-      const boxR = size * 0.46;
-      const cornerR = size * 0.14;
+      // Clean rounded-square matte carbon badge (10% outer margin baked in)
+      const boxR = size * 0.44;
+      const cornerR = size * 0.13;
       const qx = Math.max(ax - (boxR - cornerR), 0);
       const qy = Math.max(ay - (boxR - cornerR), 0);
       const sdf = Math.sqrt(qx * qx + qy * qy) - cornerR;
@@ -35,51 +34,44 @@ function renderIconRGBA(size) {
 
       const aaAlpha = sdf > 0 ? Math.max(0, Math.min(1, 1 - sdf)) : 1;
 
-      // Obsidian backdrop with radial cyan core glow
-      const glow = Math.max(0, 1 - dist / (rMax * 1.15));
-      let r = Math.round(9 + glow * 10);
-      let g = Math.round(14 + glow * 34);
-      let b = Math.round(24 + glow * 48);
+      // Subtle vertical matte carbon tone (#18181d top -> #111114 bottom)
+      const gradT = y / Math.max(1, size - 1);
+      let r = Math.round(24 - gradT * 7);
+      let g = Math.round(24 - gradT * 7);
+      let b = Math.round(29 - gradT * 9);
       let a = Math.round(255 * aaAlpha);
 
-      // Outer beveled frame border
-      if (sdf > -size * 0.032) {
-        r = 0;
-        g = 210;
-        b = 235;
+      // Hairline neutral border (#32323c)
+      const borderW = Math.max(1.0, size * 0.022);
+      if (sdf > -borderW) {
+        r = 54;
+        g = 54;
+        b = 64;
       }
 
-      // Subtle inner precision ring
-      const ringR = size * 0.31;
-      const ringW = Math.max(1.1, size * 0.022);
-      if (Math.abs(dist - ringR) <= ringW && !(ax < size * 0.09 || ay < size * 0.09)) {
-        r = 0;
-        g = 240;
-        b = 255;
-      }
-
-      // 4 crisp tactical crosshair arms
-      const armHalfW = Math.max(1.1, size * 0.033);
-      const gap = size * 0.11;
-      const armEnd = size * 0.36;
+      // 4 razor-sharp alabaster white crosshair arms (matches TitleBar SVG 1:1)
+      const armHalfW = Math.max(1.0, size * 0.036);
+      const gap = size * 0.115;
+      const armEnd = size * 0.315;
       const inH = ay <= armHalfW && ax >= gap && ax <= armEnd;
       const inV = ax <= armHalfW && ay >= gap && ay <= armEnd;
       if (inH || inV) {
-        r = 0;
-        g = 245;
-        b = 255;
+        r = 244;
+        g = 244;
+        b = 246;
       }
 
-      // Bright white center pinpoint dot with crisp rim
-      const dotR = Math.max(1.4, size * 0.048);
+      // Single signature vermilion center pinpoint (#ff5526)
+      const dotR = Math.max(1.3, size * 0.056);
       if (dist <= dotR) {
         r = 255;
-        g = 255;
-        b = 255;
-      } else if (dist <= dotR + Math.max(0.8, size * 0.015)) {
-        r = 16;
-        g = 245;
-        b = 155;
+        g = 85;
+        b = 38;
+      } else if (dist <= dotR + 0.9) {
+        const blend = Math.max(0, Math.min(1, (dotR + 0.9 - dist) / 0.9));
+        r = Math.round(r + (255 - r) * blend);
+        g = Math.round(g + (85 - g) * blend);
+        b = Math.round(b + (38 - b) * blend);
       }
 
       rgba[idx] = r;
@@ -139,7 +131,7 @@ function buildICO(sizes) {
   }));
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0);
-  header.writeUInt16LE(1, 2); // ICO
+  header.writeUInt16LE(1, 2);
   header.writeUInt16LE(images.length, 4);
 
   const entries = Buffer.alloc(16 * images.length);
@@ -166,4 +158,4 @@ fs.writeFileSync(path.join(outDir, 'icon.png'), png256);
 const ico = buildICO([256, 128, 64, 48, 32, 16]);
 fs.writeFileSync(path.join(outDir, 'icon.ico'), ico);
 
-console.log('Generated build/icon.png (256x256) and build/icon.ico (multi-res).');
+console.log('Generated matte-carbon ZeroPoint build/icon.png and build/icon.ico.');

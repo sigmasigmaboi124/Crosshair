@@ -59,27 +59,24 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
-          <h2 className="text-base font-black text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Gamepad2 className="w-4 h-4 text-[#a1a1ad]" />
-            <span>Global Hotkeys, Mouse, Keyboard & XInput Controller</span>
+            <span>Hotkeys & input devices</span>
           </h2>
-          <p className="text-xs text-[#9696a4] mt-0.5">
-            All inputs are monitored passively via read-only Windows APIs (<span className="font-mono text-emerald-300">GetAsyncKeyState</span> &{' '}
-            <span className="font-mono text-emerald-300">XInputGetState</span>) with zero global hooks and 0.0ms added input latency.
+          <p className="text-xs text-[#8c8c9a] mt-0.5">
+            Reads passive Windows input state via <code className="font-mono text-[#d0d0d8]">GetAsyncKeyState</code> and{' '}
+            <code className="font-mono text-[#d0d0d8]">XInputGetState</code> with no global hooks.
           </p>
         </div>
         {settings.strictStaticMode && (
-          <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
-            STRICT STATIC MODE ACTIVE (INPUT POLLING OFF)
-          </span>
+          <span className="text-xs font-mono text-amber-300">Static mode active</span>
         )}
       </div>
 
-      {/* Global Hotkey Customization */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionCard title="Master Overlay Toggle Shortcut" badge={hk.label}>
+        <SectionCard title="Overlay toggle shortcut" subtitle={`Current: ${hk.label}`}>
           <p className="text-xs text-[#9696a4]">
             Instantly show or hide your crosshair overlay inside any game without Alt-Tabbing.
           </p>
@@ -138,7 +135,7 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Built-in In-Game Shortcuts" badge="ALWAYS READY">
+        <SectionCard title="In-game shortcuts">
           <div className="space-y-2 text-xs">
             {[
               [hk.label, 'Toggle Crosshair Overlay On / Off'],
@@ -213,8 +210,8 @@ export const KeybindsView: React.FC<KeybindsViewProps> = ({ store }) => {
         </SectionCard>
 
         <SectionCard
-          title="XInput Controller (Live)"
-          badge={liveInput.controller.connected ? 'CONNECTED' : 'STANDBY'}
+          title="Controller (XInput)"
+          subtitle={liveInput.controller.connected ? 'Connected' : 'Not detected'}
         >
           <div className="space-y-3 text-xs">
             <div>

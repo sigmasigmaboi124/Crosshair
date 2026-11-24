@@ -38,23 +38,22 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      <div className="rounded-2xl bg-[#141418] border border-[#23232a] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-black text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Monitor className="w-4 h-4 text-[#a1a1ad]" />
-            <span>Multi-Monitor Placement & Pixel Alignment</span>
+            <span>Displays & position offset</span>
           </h2>
-          <p className="text-xs text-[#9696a4] mt-0.5">
-            Select which physical display renders your overlay. Mixed Windows DPI scaling (100%–200%) is automatically compensated in native physical pixels.
+          <p className="text-xs text-[#8c8c9a] mt-0.5">
+            Choose which monitor shows the overlay. Mixed Windows DPI scaling is handled automatically.
           </p>
         </div>
-        <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39] self-start md:self-center">
-          {monitors.length} DISPLAY{monitors.length === 1 ? '' : 'S'} DETECTED
+        <span className="text-xs font-mono text-[#8c8c9a] self-start md:self-center">
+          {monitors.length} {monitors.length === 1 ? 'display' : 'displays'}
         </span>
       </div>
 
-      {/* Visual Multi-Monitor Interactive Map */}
-      <SectionCard title="Interactive Display Topology" badge="CLICK TO ASSIGN">
+      <SectionCard title="Display layout" subtitle="Click a monitor to move the overlay">
         <div className="relative h-72 w-full rounded-xl bg-[#0e0e11] border border-[#23232a] overflow-hidden flex items-center justify-center p-5">
           <div
             className="relative"
@@ -92,9 +91,9 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
                         : 'bg-[#16161b] border-[#2c2c35] hover:border-[#464654]'
                     }`}
                   >
-                    {active && <Crosshair className="w-5 h-5 text-[#f4f4f6] mb-0.5 shrink-0 animate-pulse" />}
-                    <div className="text-[11px] font-black text-white leading-tight truncate max-w-full">
-                      D{m.index + 1} {m.primary ? '★' : ''}
+                    {active && <Crosshair className="w-4 h-4 text-[#ff5526] mb-0.5 shrink-0" />}
+                    <div className="text-[11px] font-semibold text-white leading-tight truncate max-w-full">
+                      Display {m.index + 1} {m.primary ? '· Primary' : ''}
                     </div>
                     <div className="text-[9px] font-mono text-[#9696a4] leading-tight mt-0.5 truncate max-w-full">
                       {m.width}×{m.height}
@@ -145,7 +144,7 @@ export const MonitorsView: React.FC<MonitorsViewProps> = ({ store }) => {
           </div>
         </SectionCard>
 
-        <SectionCard title="1px Precision Nudge Pad" badge="IN-GAME: ALT + ARROWS">
+        <SectionCard title="1px nudge pad" subtitle="In-game: Alt + Arrow keys">
           <div className="flex items-center justify-around py-3">
             <div className="grid grid-cols-3 gap-2 w-36">
               <div />

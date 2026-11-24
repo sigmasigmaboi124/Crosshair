@@ -132,16 +132,14 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ store }) => {
   return (
     <div className="h-full flex flex-col p-4 overflow-hidden gap-3.5">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#141418] border border-[#23232a] rounded-2xl p-3.5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#141418] border border-[#222229] rounded-lg p-3.5">
         <div>
-          <h2 className="text-base font-black text-white tracking-wide flex items-center gap-2">
-            <span>Community Workshop & Pro Vault</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#1e1e25] text-[#c4c4cf] border border-[#2f2f39]">
-              {allItems.length} DESIGNS
-            </span>
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <span>Community presets</span>
+            <span className="text-xs font-mono font-normal text-[#7c7c8a]">{allItems.length}</span>
           </h2>
-          <p className="text-xs text-[#9696a4] mt-0.5">
-            Hover any card to preview reactive animations. 1-click apply live to your overlay or clone to customize.
+          <p className="text-xs text-[#8c8c9a] mt-0.5">
+            Hover any card to preview dynamic motion. Apply directly or clone to edit.
           </p>
         </div>
 
@@ -214,7 +212,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ store }) => {
       {/* Cards Grid */}
       <div className="flex-1 overflow-y-auto pr-1">
         {filtered.length === 0 ? (
-          <div className="h-56 rounded-2xl border border-dashed border-[#23232a] flex flex-col items-center justify-center text-[#727280] text-xs gap-2">
+          <div className="h-56 rounded-lg border border-dashed border-[#23232a] flex flex-col items-center justify-center text-[#727280] text-xs gap-2">
             <span>No crosshairs matched your current filter.</span>
             <button
               type="button"
@@ -240,7 +238,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ store }) => {
                   key={cfg.id}
                   onMouseEnter={() => setHoveredId(cfg.id)}
                   onMouseLeave={() => setHoveredId((prev) => (prev === cfg.id ? null : prev))}
-                  className={`rounded-2xl bg-[#141418] border transition-all flex flex-col overflow-hidden group ${
+                  className={`rounded-lg bg-[#141418] border transition-all flex flex-col overflow-hidden group ${
                     isActive
                       ? 'border-white/35'
                       : 'border-[#23232a] hover:border-[#3b3b47]'
@@ -364,7 +362,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ store }) => {
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <form
             onSubmit={handlePublish}
-            className="w-full max-w-md rounded-2xl bg-[#141418] border border-[#2d2d36] p-5 space-y-3.5 shadow-2xl"
+            className="w-full max-w-md rounded-lg bg-[#141418] border border-[#2d2d36] p-5 space-y-3.5 shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-[#23232a] pb-2.5">
               <h3 className="text-sm font-bold text-white">Publish to Workshop Hub</h3>
@@ -461,7 +459,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({ store }) => {
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <form
             onSubmit={handleImportSubmit}
-            className="w-full max-w-md rounded-2xl bg-[#141418] border border-[#2d2d36] p-5 space-y-3.5 shadow-2xl"
+            className="w-full max-w-md rounded-lg bg-[#141418] border border-[#2d2d36] p-5 space-y-3.5 shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-[#23232a] pb-2.5">
               <h3 className="text-sm font-bold text-white">Import Share Code or Valorant Profile</h3>

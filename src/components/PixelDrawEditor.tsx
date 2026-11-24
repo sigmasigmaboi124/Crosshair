@@ -476,8 +476,8 @@ export const PixelDrawEditor: React.FC<PixelDrawEditorProps> = ({ config, onUpda
 
   return (
     <SectionCard
-      title="Pixel-Art & Freehand Crosshair Draw Studio"
-      badge={`${gridSize}×${gridSize} LIVE`}
+      title="Pixel editor"
+      subtitle={`${gridSize}×${gridSize} canvas · syncs live to overlay`}
       rightSlot={
         <div className="flex items-center gap-1">
           {([32, 64] as const).map((sz) => (

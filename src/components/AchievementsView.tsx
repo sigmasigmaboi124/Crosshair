@@ -42,17 +42,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
       {/* Rank & XP Hero Card */}
-      <div className="rounded-2xl bg-[#141418] border border-[#2c2c35] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-400/50 flex items-center justify-center">
-            <Award className="w-7 h-7 text-amber-300" />
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-lg bg-[#1c1c22] border border-[#2a2a33] flex items-center justify-center">
+            <Award className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-amber-300 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> OPERATOR PROGRESSION
-            </div>
-            <h2 className="text-xl font-black text-white mt-0.5">{operatorRank}</h2>
-            <p className="text-xs text-[#9696a4]">
+            <h2 className="text-base font-semibold text-white">{operatorRank}</h2>
+            <p className="text-xs text-[#8c8c9a]">
               {achievements.unlockedIds.length} of {ACHIEVEMENTS.length} achievements unlocked
             </p>
           </div>
@@ -102,7 +99,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({ store }) => 
           return (
             <div
               key={def.id}
-              className={`rounded-2xl p-4 border flex flex-col justify-between gap-3 transition ${
+              className={`rounded-lg p-4 border flex flex-col justify-between gap-3 transition ${
                 unlocked
                   ? 'bg-[#17171d] border-emerald-500/35'
                   : 'bg-[#111115] border-[#222228] opacity-85'

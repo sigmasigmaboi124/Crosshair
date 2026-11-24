@@ -48,6 +48,37 @@ export const SliderRow: React.FC<SliderRowProps> = ({
   );
 };
 
+interface SwitchPillProps {
+  checked: boolean;
+  accent?: 'cyan' | 'emerald' | 'amber' | 'rose';
+}
+
+const SwitchPill: React.FC<SwitchPillProps> = ({ checked, accent }) => {
+  const activeBg =
+    accent === 'emerald'
+      ? 'bg-emerald-500'
+      : accent === 'amber'
+      ? 'bg-amber-500'
+      : accent === 'rose'
+      ? 'bg-rose-500'
+      : 'bg-[#f4f4f6]';
+  const knobColor = !checked ? 'bg-[#8f8f9b]' : accent ? 'bg-white' : 'bg-[#0c0c0e]';
+
+  return (
+    <div
+      className={`w-8 h-[18px] rounded-full p-[2px] transition-colors shrink-0 ${
+        checked ? activeBg : 'bg-[#27272f]'
+      }`}
+    >
+      <div
+        className={`w-[14px] h-[14px] rounded-full transition-transform ${knobColor} ${
+          checked ? 'translate-x-[14px]' : 'translate-x-0'
+        }`}
+      />
+    </div>
+  );
+};
+
 interface ToggleRowProps {
   label: string;
   description?: string;
@@ -62,41 +93,19 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({
   checked,
   onChange,
   accent,
-}) => {
-  const activeBg =
-    accent === 'emerald'
-      ? 'bg-emerald-500'
-      : accent === 'amber'
-      ? 'bg-amber-500'
-      : accent === 'rose'
-      ? 'bg-rose-500'
-      : 'bg-[#f4f4f6]';
-  const knobColor = !checked ? 'bg-[#8f8f9b]' : accent ? 'bg-white' : 'bg-[#0c0c0e]';
-
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className="w-full flex items-center justify-between gap-3 py-2 px-2.5 rounded-lg bg-[#111114] hover:bg-[#19191f] border border-[#232329] transition-colors text-left cursor-pointer"
-    >
-      <div className="min-w-0">
-        <div className="text-xs font-medium text-[#e8e8ed]">{label}</div>
-        {description && <div className="text-[11px] text-[#787886] leading-snug mt-0.5">{description}</div>}
-      </div>
-      <div
-        className={`w-8 h-[18px] rounded-full p-[2px] transition-colors shrink-0 ${
-          checked ? activeBg : 'bg-[#27272f]'
-        }`}
-      >
-        <div
-          className={`w-[14px] h-[14px] rounded-full transition-transform ${knobColor} ${
-            checked ? 'translate-x-[14px]' : 'translate-x-0'
-          }`}
-        />
-      </div>
-    </button>
-  );
-};
+}) => (
+  <button
+    type="button"
+    onClick={() => onChange(!checked)}
+    className="w-full flex items-center justify-between gap-3 py-1.5 px-2 -mx-2 rounded-md hover:bg-[#1b1b21] transition-colors text-left cursor-pointer"
+  >
+    <div className="min-w-0">
+      <div className="text-xs font-medium text-[#e4e4e8]">{label}</div>
+      {description && <div className="text-[11px] text-[#787886] leading-snug mt-0.5">{description}</div>}
+    </div>
+    <SwitchPill checked={checked} accent={accent} />
+  </button>
+);
 
 const QUICK_SWATCHES = [
   '#00ff66',
@@ -167,23 +176,40 @@ export const ColorPickerRow: React.FC<ColorPickerRowProps> = ({ label, value, on
 
 interface SectionCardProps {
   title: string;
-  badge?: string;
+  subtitle?: string;
+  enabled?: boolean;
+  onToggleEnabled?: (next: boolean) => void;
   rightSlot?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export const SectionCard: React.FC<SectionCardProps> = ({ title, badge, rightSlot, children }) => (
-  <section className="rounded-xl bg-[#141418] border border-[#23232a] p-4 space-y-3.5">
-    <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#202026]">
-      <div className="flex items-center gap-2 min-w-0">
+export const SectionCard: React.FC<SectionCardProps> = ({
+  title,
+  subtitle,
+  enabled,
+  onToggleEnabled,
+  rightSlot,
+  children,
+}) => (
+  <section className="rounded-lg bg-[#141418] border border-[#222229] p-4 space-y-3.5">
+    <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#1f1f26]">
+      <div className="min-w-0">
         <h3 className="text-[13px] font-semibold text-[#f1f1f4] tracking-[-0.01em] truncate">{title}</h3>
-        {badge && (
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#1e1e24] text-[#9898a6] border border-[#2b2b33] shrink-0">
-            {badge}
-          </span>
+        {subtitle && <p className="text-[11px] text-[#787886] mt-0.5 truncate">{subtitle}</p>}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {rightSlot}
+        {typeof enabled === 'boolean' && onToggleEnabled && (
+          <button
+            type="button"
+            onClick={() => onToggleEnabled(!enabled)}
+            className="cursor-pointer p-0.5 rounded-full"
+            title={enabled ? 'Disable section' : 'Enable section'}
+          >
+            <SwitchPill checked={enabled} />
+          </button>
         )}
       </div>
-      {rightSlot}
     </div>
     {children}
   </section>

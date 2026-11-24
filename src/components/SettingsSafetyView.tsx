@@ -68,85 +68,73 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
 
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      {/* Hero Safety Banner */}
-      <div className="rounded-2xl bg-[#141418] border border-[#2a2a33] p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-6 h-6 text-emerald-300" />
+      {/* Safety Overview */}
+      <div className="rounded-lg bg-[#141418] border border-[#222229] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-lg bg-[#1c1c22] border border-[#2b2b34] flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base font-black text-white">Anti-Cheat Safe External Overlay Architecture</h2>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
-                ALL 5 INVARIANTS VERIFIED
-              </span>
-            </div>
-            <p className="text-xs text-[#d0d0d8] mt-1 max-w-3xl leading-relaxed">
-              Built on the same clean external Windows Desktop Window Manager (DWM) principles as Steam crosshair utilities. It behaves strictly as a separate click-through desktop window and never interacts with game files, memory, shaders, or input streams.
+            <h2 className="text-sm font-semibold text-white">External DWM overlay</h2>
+            <p className="text-xs text-[#8c8c9a] mt-0.5 max-w-2xl leading-relaxed">
+              Runs as a standalone transparent Windows overlay with no DLL injection, memory access, graphics hooking, or synthetic input.
             </p>
           </div>
         </div>
-        <div className="text-right font-mono text-[11px] shrink-0">
-          <div className="text-[#9696a4]">WINBRIDGE STATUS</div>
-          <div className={safetyAudit.bridgeConnected ? 'text-emerald-300 font-bold' : 'text-amber-300 font-bold'}>
-            {safetyAudit.bridgeConnected ? '● CONNECTED (AUDITED)' : '○ STANDBY / WEB MODE'}
-          </div>
+        <div className="text-xs font-mono shrink-0 flex items-center gap-2 text-[#9898a6]">
+          <span className={`w-1.5 h-1.5 rounded-full ${safetyAudit.bridgeConnected ? 'bg-emerald-400' : 'bg-[#636370]'}`} />
+          <span>{safetyAudit.bridgeConnected ? 'Overlay bridge connected' : 'Bridge standby'}</span>
         </div>
       </div>
 
-      {/* Live 5-Point Architecture Audit */}
-      <SectionCard title="Live Security & Anti-Cheat Invariant Inspector" badge="OPEN AUDITABLE SOURCE">
+      {/* Architecture Checks */}
+      <SectionCard title="Overlay safety checks" subtitle="Auditable native bridge invariants">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5">
           {auditChecks.map((chk) => (
             <div
               key={chk.label}
-              className="rounded-xl bg-[#0e0e11] border border-[#24242c] p-3 space-y-1"
+              className="rounded-lg bg-[#101013] border border-[#222229] p-3 space-y-1"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  {chk.label}
-                </span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
-                  PASS
-                </span>
+              <div className="text-xs font-medium text-[#ececf0] flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                {chk.label}
               </div>
-              <p className="text-[11px] text-[#9696a4] leading-relaxed">{chk.detail}</p>
+              <p className="text-[11px] text-[#7c7c8a] leading-relaxed">{chk.detail}</p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 flex items-start gap-2.5 text-xs text-amber-100/90">
-          <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+        <div className="rounded-lg bg-[#101013] border border-[#26262f] p-3 flex items-start gap-2.5 text-xs text-[#a1a1ad]">
+          <Info className="w-4 h-4 text-[#8c8c9a] shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong>Honest Transparency Note:</strong> External click-through overlays never trigger cheat detection for memory reading or injection, which is why they are widely used across FPS titles. However, individual game publishers control their own Terms of Service and tournament rules — if a competitive event disallows all external overlays, enable <strong>Ultra-Strict Static Mode</strong> or pause the overlay with your hotkey.
+            External overlays do not read game memory or inject code, though individual games and tournaments set their own Terms of Service. Switch on <strong className="text-[#e4e4e8]">Static mode</strong> or pause the overlay whenever required.
           </p>
         </div>
       </SectionCard>
 
-      {/* Auto-Updater & GitHub Sync (Releases + Commits) */}
+      {/* Auto-Updater (Releases + Commits) */}
       <SectionCard
-        title="Auto-Updater — GitHub Releases & Live Commits"
-        badge={`v${updaterState.currentVersion} @ ${updaterState.currentShortSha}`}
+        title="Updates"
+        subtitle={`v${updaterState.currentVersion} (${updaterState.currentShortSha}) · ${updaterState.repoOwner}/${updaterState.repoName}`}
         rightSlot={
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => openRepoUrl(updaterState.repoUrl)}
-              className="px-2.5 py-1 rounded-lg bg-[#18181e] hover:bg-[#222229] border border-[#2c2c35] text-[11px] font-mono text-[#d0d0d8] hover:text-white flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-1 rounded-md bg-[#18181e] hover:bg-[#222229] border border-[#2a2a33] text-[11px] font-mono text-[#b4b4c0] hover:text-white flex items-center gap-1 cursor-pointer"
             >
-              <GitBranch className="w-3 h-3 text-[#a1a1ad]" />
-              <span>{updaterState.repoOwner}/{updaterState.repoName}</span>
+              <GitBranch className="w-3 h-3" />
+              <span>GitHub</span>
               <ExternalLink className="w-3 h-3 opacity-70" />
             </button>
             <button
               type="button"
               onClick={() => checkForUpdates()}
               disabled={updaterState.status === 'checking' || updaterState.status === 'downloading' || updaterState.status === 'building-commit'}
-              className="px-3 py-1 rounded-lg bg-[#f4f4f6] hover:bg-white disabled:opacity-45 text-[#0c0c0e] font-bold text-[11px] flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1 rounded-md bg-[#f4f4f6] hover:bg-white disabled:opacity-45 text-[#0c0c0e] font-semibold text-[11px] flex items-center gap-1.5 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${updaterState.status === 'checking' ? 'animate-spin' : ''}`} />
-              <span>{updaterState.status === 'checking' ? 'Checking...' : 'Check Now'}</span>
+              <RefreshCw className={`w-3 h-3 ${updaterState.status === 'checking' ? 'animate-spin' : ''}`} />
+              <span>{updaterState.status === 'checking' ? 'Checking...' : 'Check now'}</span>
             </button>
           </div>
         }
@@ -225,15 +213,15 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <span
                     className={`w-2 h-2 rounded-full ${
                       updaterState.status === 'downloaded'
-                        ? 'bg-emerald-400 animate-pulse'
+                        ? 'bg-emerald-400'
                         : updaterState.status === 'update-available'
-                        ? 'bg-amber-400 animate-pulse'
+                        ? 'bg-amber-400'
                         : updaterState.status === 'error'
                         ? 'bg-rose-400'
-                        : 'bg-[#e4e4e8]'
+                        : 'bg-[#a1a1ad]'
                     }`}
                   />
-                  <span className="text-xs font-bold text-white uppercase tracking-wide">
+                  <span className="text-xs font-semibold text-white">
                     {updaterState.status === 'idle' && 'Ready to Check'}
                     {updaterState.status === 'checking' && 'Querying GitHub Releases & Commits...'}
                     {updaterState.status === 'up-to-date' && 'Up to Date (Latest Release & Commit)'}
@@ -282,7 +270,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => installUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0c0c0e] font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <RotateCw className="w-3.5 h-3.5" /> Restart & Install Update
                   </button>
@@ -292,7 +280,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => downloadUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#f4f4f6] hover:bg-white text-[#0c0c0e] font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" /> Download & Install Binary
                   </button>
@@ -302,7 +290,7 @@ export const SettingsSafetyView: React.FC<SettingsSafetyViewProps> = ({ store })
                   <button
                     type="button"
                     onClick={() => pullCommitUpdate()}
-                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0c0c0e] font-black text-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0c0c0e] font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <GitCommitHorizontal className="w-3.5 h-3.5" /> Pull Commit, Rebuild & Relaunch
                   </button>
