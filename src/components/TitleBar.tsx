@@ -8,7 +8,7 @@ interface TitleBarProps {
 }
 
 export const TitleBar: React.FC<TitleBarProps> = ({ store }) => {
-  const { settings, setSettings, activeConfig, monitors, updaterState } = store;
+  const { settings, setSettings, activeConfig, monitors, updaterState, colorFilter, updateColorFilter } = store;
   const t = useT(settings.language);
   const api = getElectronAPI();
   const activeMonitor = monitors[settings.selectedMonitorIndex] ?? monitors[0];
@@ -60,6 +60,25 @@ export const TitleBar: React.FC<TitleBarProps> = ({ store }) => {
             </span>
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={() => updateColorFilter((prev) => ({ ...prev, enabled: !prev.enabled }), true)}
+          className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium border transition cursor-pointer ${
+            colorFilter.enabled
+              ? 'bg-[#1b1b20] border-[#34343e] text-[#f4f4f6] hover:bg-[#222229]'
+              : 'bg-[#121216] border-[#23232a] text-[#787886] hover:text-[#c4c4cf]'
+          }`}
+          title="Toggle color filters (Ctrl + F9)"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              colorFilter.enabled ? 'bg-emerald-400' : 'bg-[#52525e]'
+            }`}
+          />
+          <span>{colorFilter.enabled ? `Colors · ${colorFilter.activePreset}` : 'Colors off'}</span>
+          <span className="text-[10px] font-mono text-[#6e6e7c]">Ctrl+F9</span>
+        </button>
 
         <button
           type="button"

@@ -3,15 +3,25 @@ import {
   AchievementProgress,
   AimSessionRecord,
   AppSettings,
+  AudioEndpointInfo,
+  AudioLimiterConfig,
+  AudioTelemetryState,
+  ColorFilterConfig,
+  ColorFilterStatus,
   CrosshairConfig,
   DEFAULT_INPUT_STATE,
   LiveInputState,
   MonitorInfo,
+  RobRunOptimizerConfig,
+  RobRunOptimizerStatus,
   SafetyAuditStatus,
   SavedProfile,
   UpdateChannel,
   UpdaterState,
+  createDefaultAudioLimiterConfig,
+  createDefaultColorFilterConfig,
   createDefaultCrosshair,
+  createDefaultRobRunOptimizerConfig,
 } from '../types/crosshair';
 import { COMMUNITY_PRESETS, CommunityPresetItem } from '../data/presets';
 import { AchievementDefinition, createInitialAchievementProgress, evaluateAchievements } from '../data/achievements';
@@ -21,6 +31,9 @@ export type NavTab =
   | 'community'
   | 'profiles'
   | 'aim-trainer'
+  | 'color-filters'
+  | 'audio-limiter'
+  | 'fps-optimizer'
   | 'monitors'
   | 'keybinds'
   | 'achievements'
@@ -42,6 +55,9 @@ interface PersistedData {
   aimHistory: AimSessionRecord[];
   achievements: AchievementProgress;
   settings: AppSettings;
+  audioLimiter: AudioLimiterConfig;
+  robRunOptimizer: RobRunOptimizerConfig;
+  colorFilter: ColorFilterConfig;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -177,6 +193,30 @@ interface ElectronAPI {
   onMonitorsUpdate: (cb: (monitors: MonitorInfo[]) => void) => () => void;
   onSafetyAuditUpdate: (cb: (audit: SafetyAuditStatus) => void) => () => void;
   onTrayAction: (cb: (action: { type: string; profileId?: string }) => void) => () => void;
+
+  syncAudioLimiter: (cfg: AudioLimiterConfig) => void;
+  getAudioDevices: () => Promise<{ devices: AudioEndpointInfo[]; processes: string[] }>;
+  onAudioTelemetry: (cb: (telemetry: AudioTelemetryState) => void) => () => void;
+  onAudioDevicesUpdate: (cb: (payload: { devices: AudioEndpointInfo[]; processes: string[] }) => void) => () => void;
+
+  syncOptimizerConfig: (cfg: RobRunOptimizerConfig) => void;
+  getOptimizerStatus: () => Promise<RobRunOptimizerStatus | null>;
+  applyOptimizerNow: (cfg: RobRunOptimizerConfig) => void;
+  restoreOptimizerBackup: () => void;
+  restoreDesktopNow: () => void;
+  launchRobRunOptimized: (cfg: RobRunOptimizerConfig) => void;
+  openLocalPath: (targetPath: string) => void;
+  onOptimizerStatus: (cb: (status: RobRunOptimizerStatus) => void) => () => void;
+  onOptimizerActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
+
+  syncColorFilter: (config: ColorFilterConfig, flash?: boolean) => void;
+  getColorStatus: () => Promise<ColorFilterStatus | null>;
+  previewColorHud: () => void;
+  unlockGammaRange: () => void;
+  captureCleanScreen: () => Promise<string | null>;
+  onColorStatus: (cb: (status: ColorFilterStatus) => void) => () => void;
+  onColorConfigSync: (cb: (payload: { config: ColorFilterConfig; status: ColorFilterStatus }) => void) => () => void;
+  onColorActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
 }
 
 export function getElectronAPI(): ElectronAPI | undefined {
@@ -194,6 +234,56 @@ export function useAppStore() {
   const [aimHistory, setAimHistory] = useState<AimSessionRecord[]>([]);
   const [achievements, setAchievements] = useState<AchievementProgress>(createInitialAchievementProgress);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [audioLimiter, setAudioLimiter] = useState<AudioLimiterConfig>(createDefaultAudioLimiterConfig);
+  const [audioEndpoints, setAudioEndpoints] = useState<AudioEndpointInfo[]>([]);
+  const [runningProcesses, setRunningProcesses] = useState<string[]>([]);
+  const [audioTelemetry, setAudioTelemetry] = useState<AudioTelemetryState>({
+    status: 'waiting',
+    processName: 'ROB RUN.exe',
+    pid: 0,
+    profileId: 'robrun',
+    inputDb: -60,
+    outputDb: -60,
+    gainReductionDb: 0,
+    footstepLiftDb: 0,
+    peakProtectedCount: 0,
+  });
+
+  const [robRunOptimizer, setRobRunOptimizer] = useState<RobRunOptimizerConfig>(createDefaultRobRunOptimizerConfig);
+  const [colorFilter, setColorFilter] = useState<ColorFilterConfig>(createDefaultColorFilterConfig);
+  const [colorStatus, setColorStatus] = useState<ColorFilterStatus>({
+    effectiveActive: false,
+    effectiveName: 'Off',
+    effectiveReason: 'Paused',
+    foregroundProcess: '',
+    filterReady: true,
+    filterStatus: 'Screen filter ready',
+    amdAvailable: false,
+    amdStatus: 'Select AMD Radeon mode to link driver',
+    lastPath: 'Off',
+    gammaAchieved: 1,
+    gammaLimited: false,
+  });
+  const [optimizerStatus, setOptimizerStatus] = useState<RobRunOptimizerStatus>({
+    detectedInstallDir: '',
+    detectedExePath: '',
+    settingsFilePaths: [],
+    hasBackup: false,
+    gameRunning: false,
+    gamePid: 0,
+    displayStretchedActive: false,
+    currentDesktopWidth: 1920,
+    currentDesktopHeight: 1080,
+    currentDesktopHz: 240,
+    launchFlagsString: '-window-mode borderless -screen-width 1440 -screen-height 1080 -nolog',
+    supportedModes: [
+      { width: 1920, height: 1080, maxHz: 240, aspectLabel: '16:9 Native' },
+      { width: 1440, height: 1080, maxHz: 240, aspectLabel: '4:3 Stretched' },
+      { width: 1280, height: 1024, maxHz: 240, aspectLabel: '5:4 Stretched' },
+      { width: 1280, height: 960, maxHz: 240, aspectLabel: '4:3 Stretched' },
+    ],
+    liveConfigSummary: null,
+  });
 
   const [liveInput, setLiveInput] = useState<LiveInputState>(DEFAULT_INPUT_STATE);
   const [monitors, setMonitors] = useState<MonitorInfo[]>([
@@ -319,6 +409,38 @@ export function useAppStore() {
             aimSettings: { ...DEFAULT_SETTINGS.aimSettings, ...(raw.settings.aimSettings ?? {}) },
           });
         }
+        if (raw.audioLimiter && typeof raw.audioLimiter === 'object') {
+          const defAudio = createDefaultAudioLimiterConfig();
+          setAudioLimiter({
+            ...defAudio,
+            ...raw.audioLimiter,
+            profiles:
+              Array.isArray(raw.audioLimiter.profiles) && raw.audioLimiter.profiles.length > 0
+                ? raw.audioLimiter.profiles
+                : defAudio.profiles,
+          });
+        }
+        if (raw.robRunOptimizer && typeof raw.robRunOptimizer === 'object') {
+          setRobRunOptimizer({
+            ...createDefaultRobRunOptimizerConfig(),
+            ...raw.robRunOptimizer,
+          });
+        }
+        if (raw.colorFilter && typeof raw.colorFilter === 'object') {
+          const defColor = createDefaultColorFilterConfig();
+          setColorFilter({
+            ...defColor,
+            ...raw.colorFilter,
+            working: { ...defColor.working, ...(raw.colorFilter.working ?? {}) },
+            applied: { ...defColor.applied, ...(raw.colorFilter.applied ?? raw.colorFilter.working ?? {}) },
+            customPresets: Array.isArray(raw.colorFilter.customPresets) ? raw.colorFilter.customPresets : [],
+            rules: Array.isArray(raw.colorFilter.rules) ? raw.colorFilter.rules : [],
+            hotkeys:
+              Array.isArray(raw.colorFilter.hotkeys) && raw.colorFilter.hotkeys.length > 0
+                ? raw.colorFilter.hotkeys
+                : defColor.hotkeys,
+          });
+        }
       }
       if (api) {
         try {
@@ -328,6 +450,15 @@ export function useAppStore() {
           if (!cancelled && audit) setSafetyAudit(audit);
           const upd = await api.getUpdaterState();
           if (!cancelled && upd) setUpdaterState(upd);
+          const audDev = await api.getAudioDevices();
+          if (!cancelled && audDev) {
+            if (Array.isArray(audDev.devices)) setAudioEndpoints(audDev.devices);
+            if (Array.isArray(audDev.processes)) setRunningProcesses(audDev.processes);
+          }
+          const optSt = await api.getOptimizerStatus();
+          if (!cancelled && optSt) setOptimizerStatus(optSt);
+          const colSt = await api.getColorStatus();
+          if (!cancelled && colSt) setColorStatus(colSt);
         } catch {
           // Ignore
         }
@@ -352,6 +483,9 @@ export function useAppStore() {
       aimHistory,
       achievements,
       settings,
+      audioLimiter,
+      robRunOptimizer,
+      colorFilter,
     };
     const api = getElectronAPI();
     if (api) api.savePersistedState(data);
@@ -377,6 +511,9 @@ export function useAppStore() {
     aimHistory,
     achievements,
     settings,
+    audioLimiter,
+    robRunOptimizer,
+    colorFilter,
   ]);
 
   useEffect(() => {
@@ -444,6 +581,41 @@ export function useAppStore() {
       }))
     );
   }, [profiles, activeProfileId]);
+
+  // Sync Process-Isolated Gunshot Limiter & Footstep EQ with WinBridge
+  useEffect(() => {
+    if (!hydrated) return;
+    const api = getElectronAPI();
+    if (!api) return;
+    api.syncAudioLimiter(audioLimiter);
+  }, [hydrated, audioLimiter]);
+
+  // Sync ROB RUN Competitive Config & FPS Optimizer with WinBridge
+  useEffect(() => {
+    if (!hydrated) return;
+    const api = getElectronAPI();
+    if (!api) return;
+    api.syncOptimizerConfig(robRunOptimizer);
+  }, [hydrated, robRunOptimizer]);
+
+  const colorFlashRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated) return;
+    const api = getElectronAPI();
+    const shouldFlash = colorFlashRef.current;
+    colorFlashRef.current = false;
+    if (!api) {
+      setColorStatus((prev) => ({
+        ...prev,
+        effectiveActive: colorFilter.enabled,
+        effectiveName: colorFilter.enabled ? colorFilter.activePreset : 'Off',
+        effectiveReason: colorFilter.enabled ? 'All apps & games' : 'Paused',
+        lastPath: colorFilter.enabled ? 'Screen filter' : 'Off',
+      }));
+      return;
+    }
+    api.syncColorFilter(colorFilter, shouldFlash);
+  }, [hydrated, colorFilter]);
 
   // Keep refs for event listeners
   const profilesRef = useRef(profiles);
@@ -542,9 +714,40 @@ export function useAppStore() {
           selectProfile(action.profileId);
         } else if (action.type === 'openAimTrainer') {
           setActiveTab('aim-trainer');
+        } else if (action.type === 'openAudioLimiter') {
+          setActiveTab('audio-limiter');
+        } else if (action.type === 'openFpsOptimizer') {
+          setActiveTab('fps-optimizer');
+        } else if (action.type === 'openColorFilters') {
+          setActiveTab('color-filters');
         } else if (action.type === 'openUpdates') {
           setActiveTab('safety');
         }
+      }),
+      api.onAudioTelemetry((tel) => setAudioTelemetry(tel)),
+      api.onAudioDevicesUpdate((payload) => {
+        if (Array.isArray(payload.devices)) setAudioEndpoints(payload.devices);
+        if (Array.isArray(payload.processes)) setRunningProcesses(payload.processes);
+      }),
+      api.onOptimizerStatus((st) => setOptimizerStatus(st)),
+      api.onOptimizerActionResult((res) => {
+        pushToast(
+          res.ok ? 'ROB RUN Optimizer' : 'Optimizer Notice',
+          res.message,
+          res.ok ? 'emerald' : 'rose'
+        );
+      }),
+      api.onColorStatus((st) => setColorStatus(st)),
+      api.onColorConfigSync((payload) => {
+        if (payload.config) setColorFilter(payload.config);
+        if (payload.status) setColorStatus(payload.status);
+      }),
+      api.onColorActionResult((res) => {
+        pushToast(
+          res.ok ? 'Color Filter' : 'Color Filter Notice',
+          res.message,
+          res.ok ? 'emerald' : 'amber'
+        );
       }),
     ];
 
@@ -709,6 +912,79 @@ export function useAppStore() {
     bumpStat,
     settings,
     setSettings,
+    audioLimiter,
+    setAudioLimiter,
+    audioEndpoints,
+    runningProcesses,
+    audioTelemetry,
+    refreshAudioDevices: async () => {
+      const api = getElectronAPI();
+      if (!api) return;
+      const res = await api.getAudioDevices();
+      if (res) {
+        if (Array.isArray(res.devices)) setAudioEndpoints(res.devices);
+        if (Array.isArray(res.processes)) setRunningProcesses(res.processes);
+      }
+    },
+    robRunOptimizer,
+    setRobRunOptimizer,
+    optimizerStatus,
+    refreshOptimizerStatus: async () => {
+      const api = getElectronAPI();
+      if (!api) return;
+      const st = await api.getOptimizerStatus();
+      if (st) setOptimizerStatus(st);
+    },
+    applyRobRunOptimizerNow: (cfgOverride?: RobRunOptimizerConfig) => {
+      const target = cfgOverride ?? robRunOptimizer;
+      const api = getElectronAPI();
+      if (api) {
+        api.applyOptimizerNow(target);
+      } else {
+        pushToast('Applied Preview', `Saved ${target.resWidth}×${target.resHeight} @ ${target.refreshRateHz}Hz preset.`, 'emerald');
+      }
+    },
+    restoreRobRunOriginal: () => {
+      const api = getElectronAPI();
+      if (api) api.restoreOptimizerBackup();
+      else pushToast('Desktop Feature', 'Run in ZeroPoint Desktop to restore game files.', 'cyan');
+    },
+    restoreDesktopDisplayNow: () => {
+      const api = getElectronAPI();
+      if (api) api.restoreDesktopNow();
+      else pushToast('Desktop Restored', 'Returned display to normal desktop resolution.', 'emerald');
+    },
+    launchRobRunOptimized: () => {
+      const api = getElectronAPI();
+      if (api) api.launchRobRunOptimized(robRunOptimizer);
+      else pushToast('Desktop Feature', 'Launch via ZeroPoint Desktop to start Steam with flags.', 'cyan');
+    },
+    openLocalPath: (targetPath: string) => {
+      const api = getElectronAPI();
+      if (api) api.openLocalPath(targetPath);
+    },
+    colorFilter,
+    setColorFilter,
+    updateColorFilter: (updater: (prev: ColorFilterConfig) => ColorFilterConfig, flash = false) => {
+      colorFlashRef.current = flash;
+      setColorFilter((prev) => updater(prev));
+    },
+    colorStatus,
+    previewColorHud: () => {
+      const api = getElectronAPI();
+      if (api) api.previewColorHud();
+      else pushToast('Color HUD Preview', `${colorFilter.activePreset} (${colorFilter.hudCorner})`, 'cyan');
+    },
+    unlockGammaRange: () => {
+      const api = getElectronAPI();
+      if (api) api.unlockGammaRange();
+      else pushToast('Desktop Feature', 'Run in ZeroPoint Desktop to unlock Windows gamma range.', 'cyan');
+    },
+    captureCleanScreen: async (): Promise<string | null> => {
+      const api = getElectronAPI();
+      if (!api) return null;
+      return api.captureCleanScreen();
+    },
     liveInput,
     monitors,
     safetyAudit,

@@ -9,6 +9,9 @@ import { MonitorsView } from './components/MonitorsView';
 import { KeybindsView } from './components/KeybindsView';
 import { AchievementsView } from './components/AchievementsView';
 import { SettingsSafetyView } from './components/SettingsSafetyView';
+import { AudioLimiterView } from './components/AudioLimiterView';
+import { FpsOptimizerView } from './components/FpsOptimizerView';
+import { ColorFiltersView } from './components/ColorFiltersView';
 
 // Lazy-load Three.js 3D Aim Trainer so WebGL & Three.js consume 0 MB RAM until opened
 const AimTrainerView = lazy(() => import('./components/AimTrainerView'));
@@ -38,6 +41,9 @@ export const App: React.FC = () => {
               <AimTrainerView store={store} />
             </Suspense>
           )}
+          {store.activeTab === 'color-filters' && <ColorFiltersView store={store} />}
+          {store.activeTab === 'audio-limiter' && <AudioLimiterView store={store} />}
+          {store.activeTab === 'fps-optimizer' && <FpsOptimizerView store={store} />}
           {store.activeTab === 'monitors' && <MonitorsView store={store} />}
           {store.activeTab === 'keybinds' && <KeybindsView store={store} />}
           {store.activeTab === 'achievements' && <AchievementsView store={store} />}

@@ -26,6 +26,9 @@ type TranslationDict = {
   navCommunity: string;
   navProfiles: string;
   navAimTrainer: string;
+  navColorFilters: string;
+  navAudioLimiter: string;
+  navFpsOptimizer: string;
   navMonitors: string;
   navKeybinds: string;
   navAchievements: string;
@@ -49,6 +52,9 @@ const EN: TranslationDict = {
   navCommunity: 'Community',
   navProfiles: 'Profiles',
   navAimTrainer: 'Aim trainer',
+  navColorFilters: 'Color filters',
+  navAudioLimiter: 'Audio limiter',
+  navFpsOptimizer: 'FPS optimizer',
   navMonitors: 'Displays',
   navKeybinds: 'Controls',
   navAchievements: 'Achievements',

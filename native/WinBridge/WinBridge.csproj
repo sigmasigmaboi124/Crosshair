@@ -11,7 +11,7 @@
     <Product>ZeroPoint Crosshair Overlay</Product>
     <Description>ZeroPoint Crosshair Overlay</Description>
     <Company>ZeroPoint</Company>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <PlatformTarget>x64</PlatformTarget>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>

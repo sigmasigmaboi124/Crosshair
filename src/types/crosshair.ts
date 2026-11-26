@@ -339,6 +339,350 @@ export interface SafetyAuditStatus {
   captureEvasion: boolean;
 }
 
+export type AudioPresetId = 'balanced' | 'max-footsteps' | 'hearing-shield' | 'night' | 'custom';
+export type AudioRoutingMode = 'direct-session' | 'loopback-eq';
+
+export interface AudioGameProfile {
+  id: string;
+  name: string;
+  processNames: string[];
+  enabled: boolean;
+  preset: AudioPresetId;
+  ceilingDb: number;
+  thresholdDb: number;
+  ratio: number;
+  footstepLiftDb: number;
+  releaseMs: number;
+  subBassCutDb: number;
+  lowMidGainDb: number;
+  footstepMidGainDb: number;
+  presenceGainDb: number;
+  trebleTameDb: number;
+}
+
+export interface AudioLimiterConfig {
+  masterEnabled: boolean;
+  lockToSelectedProcess: boolean;
+  selectedProfileId: string;
+  routingMode: AudioRoutingMode;
+  outputDeviceId: string;
+  profiles: AudioGameProfile[];
+}
+
+export interface AudioEndpointInfo {
+  id: string;
+  name: string;
+  isDefault: boolean;
+}
+
+export interface AudioTelemetryState {
+  status: 'disabled' | 'waiting' | 'active' | 'active-silent';
+  processName: string;
+  pid: number;
+  profileId: string;
+  inputDb: number;
+  outputDb: number;
+  gainReductionDb: number;
+  footstepLiftDb: number;
+  peakProtectedCount: number;
+}
+
+export type RobRunPresetId = 'competitive' | 'max-fps' | 'visibility' | 'native-clean' | 'custom';
+
+export interface RobRunOptimizerConfig {
+  autoOptimizeOnLaunch: boolean;
+  autoRestoreDesktopOnExit: boolean;
+  targetProcessName: string;
+  steamAppId: string;
+  customInstallDir: string;
+  targetMonitorIndex: number;
+  preset: RobRunPresetId;
+  grassQuality: 'low' | 'medium' | 'high';
+  grassDistance: 'low' | 'medium' | 'high';
+  shadows: 'disabled' | 'low' | 'medium' | 'high';
+  hbao: boolean;
+  reflections: boolean;
+  depthOfField: boolean;
+  autoExposure: boolean;
+  waterQuality: 'minimum' | 'low' | 'medium';
+  antiAliasing: 'disabled' | 'fxaa' | 'smaa' | 'taa';
+  lodBias: number;
+  cullingDistance: 'low' | 'medium' | 'high';
+  renderScale: number;
+  textureMipmapLimit: number;
+  anisotropicFiltering: number;
+  vramBudgetMb: number;
+  showFpsCounter: boolean;
+  applyStretchedDisplayOnLaunch: boolean;
+  resWidth: number;
+  resHeight: number;
+  refreshRateHz: number;
+  fullscreenMode: number;
+  gpuHighPerformance: boolean;
+  flagNoLog: boolean;
+  flagBorderless: boolean;
+  flagForceD3d11: boolean;
+  extraLaunchFlags: string;
+}
+
+export interface DisplayModeOption {
+  width: number;
+  height: number;
+  maxHz: number;
+  aspectLabel: string;
+}
+
+export interface RobRunOptimizerStatus {
+  detectedInstallDir: string;
+  detectedExePath: string;
+  settingsFilePaths: string[];
+  hasBackup: boolean;
+  gameRunning: boolean;
+  gamePid: number;
+  displayStretchedActive: boolean;
+  currentDesktopWidth: number;
+  currentDesktopHeight: number;
+  currentDesktopHz: number;
+  launchFlagsString: string;
+  supportedModes: DisplayModeOption[];
+  liveConfigSummary: {
+    resolution: string;
+    grass: string;
+    shadows: string;
+    hbao: boolean;
+    reflections: boolean;
+    depthOfField: boolean;
+    lodBias: number;
+    culling: string;
+  } | null;
+}
+
+export interface ColorLook {
+  name: string;
+  builtIn: boolean;
+  brightness: number; // -0.5 .. 0.5
+  contrast: number; // 0.5 .. 2.0
+  temperature: number; // -1.0 .. 1.0
+  saturation: number; // 0.0 .. 4.0
+  hue: number; // -180 .. 180
+  shadowBoost: number; // 1.0 .. 3.0
+}
+
+export interface ColorAppRule {
+  process: string;
+  preset: string; // Preset name or "Off"
+}
+
+export interface ColorHotkeyBinding {
+  action: 'toggle' | 'next' | 'prev' | 'hud';
+  modifiers: number;
+  vk: number;
+}
+
+export type ColorHudCorner = 'TopLeft' | 'TopRight' | 'BottomLeft' | 'BottomRight';
+
+export interface ColorFilterConfig {
+  enabled: boolean;
+  activePreset: string;
+  working: ColorLook;
+  applied: ColorLook;
+  autoApply: boolean;
+  customPresets: ColorLook[];
+  engineMode: 'screen' | 'amd';
+  shadowBoostEnabled: boolean;
+  rules: ColorAppRule[];
+  rulesOnly: boolean;
+  hudToasts: boolean;
+  hudPinned: boolean;
+  hudCorner: ColorHudCorner;
+  hotkeys: ColorHotkeyBinding[];
+}
+
+export interface ColorFilterStatus {
+  effectiveActive: boolean;
+  effectiveName: string;
+  effectiveReason: string;
+  foregroundProcess: string;
+  filterReady: boolean;
+  filterStatus: string;
+  amdAvailable: boolean;
+  amdStatus: string;
+  lastPath: string;
+  gammaAchieved: number;
+  gammaLimited: boolean;
+}
+
+export const BUILTIN_COLOR_LOOKS: ColorLook[] = [
+  { name: 'Stock', builtIn: true, brightness: 0, contrast: 1, temperature: 0, saturation: 1, hue: 0, shadowBoost: 1 },
+  { name: 'Vivid', builtIn: true, brightness: 0, contrast: 1.05, temperature: 0, saturation: 1.4, hue: 0, shadowBoost: 1 },
+  { name: 'Hyper', builtIn: true, brightness: 0, contrast: 1.08, temperature: -0.15, saturation: 2.0, hue: 0, shadowBoost: 1 },
+  { name: 'Overclock', builtIn: true, brightness: 0.02, contrast: 1.15, temperature: -0.25, saturation: 2.6, hue: 0, shadowBoost: 1 },
+  { name: 'Night Vision', builtIn: true, brightness: 0.04, contrast: 1.05, temperature: 0, saturation: 1.3, hue: 0, shadowBoost: 2.2 },
+  { name: 'Spotter', builtIn: true, brightness: 0, contrast: 1.1, temperature: -0.05, saturation: 1.6, hue: 0, shadowBoost: 1.5 },
+  { name: 'Golden', builtIn: true, brightness: 0, contrast: 1.1, temperature: 0.35, saturation: 1.25, hue: 0, shadowBoost: 1 },
+];
+
+export function createDefaultColorFilterConfig(): ColorFilterConfig {
+  const hyper = structuredClone(BUILTIN_COLOR_LOOKS[2]);
+  hyper.builtIn = false;
+  return {
+    enabled: false,
+    activePreset: 'Hyper',
+    working: hyper,
+    applied: structuredClone(hyper),
+    autoApply: true,
+    customPresets: [],
+    engineMode: 'screen',
+    shadowBoostEnabled: true,
+    rules: [],
+    rulesOnly: false,
+    hudToasts: true,
+    hudPinned: false,
+    hudCorner: 'TopRight',
+    hotkeys: [
+      { action: 'toggle', modifiers: 2, vk: 0x78 }, // Ctrl+F9
+      { action: 'next', modifiers: 2, vk: 0x79 },   // Ctrl+F10
+      { action: 'prev', modifiers: 6, vk: 0x79 },   // Ctrl+Shift+F10
+      { action: 'hud', modifiers: 2, vk: 0x7a },    // Ctrl+F11
+    ],
+  };
+}
+
+export function createDefaultAudioLimiterConfig(): AudioLimiterConfig {
+  return {
+    masterEnabled: true,
+    lockToSelectedProcess: true,
+    selectedProfileId: 'robrun',
+    routingMode: 'direct-session',
+    outputDeviceId: '',
+    profiles: [
+      {
+        id: 'robrun',
+        name: 'ROB RUN',
+        processNames: ['ROB RUN.exe'],
+        enabled: true,
+        preset: 'balanced',
+        ceilingDb: -12,
+        thresholdDb: -20,
+        ratio: 8,
+        footstepLiftDb: 6.5,
+        releaseMs: 80,
+        subBassCutDb: -6.5,
+        lowMidGainDb: -2.5,
+        footstepMidGainDb: 6.5,
+        presenceGainDb: 4,
+        trebleTameDb: -3.5,
+      },
+      {
+        id: 'cs2',
+        name: 'Counter-Strike 2',
+        processNames: ['cs2.exe'],
+        enabled: true,
+        preset: 'balanced',
+        ceilingDb: -13,
+        thresholdDb: -21,
+        ratio: 9,
+        footstepLiftDb: 6,
+        releaseMs: 75,
+        subBassCutDb: -5.5,
+        lowMidGainDb: -2,
+        footstepMidGainDb: 6,
+        presenceGainDb: 3.5,
+        trebleTameDb: -4,
+      },
+      {
+        id: 'valorant',
+        name: 'VALORANT',
+        processNames: ['VALORANT-Win64-Shipping.exe'],
+        enabled: true,
+        preset: 'balanced',
+        ceilingDb: -12,
+        thresholdDb: -19,
+        ratio: 7,
+        footstepLiftDb: 5.5,
+        releaseMs: 85,
+        subBassCutDb: -4.5,
+        lowMidGainDb: -2,
+        footstepMidGainDb: 5.5,
+        presenceGainDb: 3.5,
+        trebleTameDb: -3,
+      },
+      {
+        id: 'tarkov',
+        name: 'Escape from Tarkov',
+        processNames: ['EscapeFromTarkov.exe'],
+        enabled: true,
+        preset: 'hearing-shield',
+        ceilingDb: -15,
+        thresholdDb: -24,
+        ratio: 12,
+        footstepLiftDb: 8,
+        releaseMs: 90,
+        subBassCutDb: -8,
+        lowMidGainDb: -3,
+        footstepMidGainDb: 7.5,
+        presenceGainDb: 4.5,
+        trebleTameDb: -5,
+      },
+      {
+        id: 'rust',
+        name: 'Rust',
+        processNames: ['RustClient.exe'],
+        enabled: true,
+        preset: 'balanced',
+        ceilingDb: -13.5,
+        thresholdDb: -22,
+        ratio: 10,
+        footstepLiftDb: 7,
+        releaseMs: 85,
+        subBassCutDb: -7,
+        lowMidGainDb: -2.5,
+        footstepMidGainDb: 6.5,
+        presenceGainDb: 4,
+        trebleTameDb: -4,
+      },
+    ],
+  };
+}
+
+export function createDefaultRobRunOptimizerConfig(): RobRunOptimizerConfig {
+  return {
+    autoOptimizeOnLaunch: true,
+    autoRestoreDesktopOnExit: true,
+    targetProcessName: 'ROB RUN.exe',
+    steamAppId: '4262460',
+    customInstallDir: '',
+    targetMonitorIndex: 0,
+    preset: 'competitive',
+    grassQuality: 'low',
+    grassDistance: 'low',
+    shadows: 'disabled',
+    hbao: false,
+    reflections: false,
+    depthOfField: false,
+    autoExposure: false,
+    waterQuality: 'minimum',
+    antiAliasing: 'disabled',
+    lodBias: 0.8,
+    cullingDistance: 'low',
+    renderScale: 1.0,
+    textureMipmapLimit: 2,
+    anisotropicFiltering: 0,
+    vramBudgetMb: 2048,
+    showFpsCounter: true,
+    applyStretchedDisplayOnLaunch: true,
+    resWidth: 1440,
+    resHeight: 1080,
+    refreshRateHz: 240,
+    fullscreenMode: 1,
+    gpuHighPerformance: true,
+    flagNoLog: true,
+    flagBorderless: true,
+    flagForceD3d11: false,
+    extraLaunchFlags: '',
+  };
+}
+
 export const DEFAULT_INPUT_STATE: LiveInputState = {
   lmb: false,
   rmb: false,

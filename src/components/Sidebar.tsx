@@ -5,9 +5,12 @@ import {
   Compass,
   Crosshair,
   Gamepad2,
+  Gauge,
   Monitor,
+  Palette,
   ShieldCheck,
   Sliders,
+  Volume2,
 } from 'lucide-react';
 import { AppStore, NavTab } from '../store/useAppStore';
 import { useT } from '../data/i18n';
@@ -33,6 +36,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ store }) => {
     { id: 'community', label: t.navCommunity, icon: <Compass className="w-4 h-4" />, meta: '48' },
     { id: 'profiles', label: t.navProfiles, icon: <Bookmark className="w-4 h-4" />, meta: String(profiles.length) },
     { id: 'aim-trainer', label: t.navAimTrainer, icon: <Crosshair className="w-4 h-4" /> },
+    {
+      id: 'color-filters',
+      label: t.navColorFilters,
+      icon: <Palette className="w-4 h-4" />,
+      meta: store.colorFilter.enabled ? 'On' : undefined,
+    },
+    {
+      id: 'audio-limiter',
+      label: t.navAudioLimiter,
+      icon: <Volume2 className="w-4 h-4" />,
+      meta: store.audioLimiter.masterEnabled ? 'On' : undefined,
+    },
+    {
+      id: 'fps-optimizer',
+      label: t.navFpsOptimizer,
+      icon: <Gauge className="w-4 h-4" />,
+      meta: store.optimizerStatus.gameRunning ? 'Run' : undefined,
+    },
     { id: 'monitors', label: t.navMonitors, icon: <Monitor className="w-4 h-4" /> },
     { id: 'keybinds', label: t.navKeybinds, icon: <Gamepad2 className="w-4 h-4" /> },
     {

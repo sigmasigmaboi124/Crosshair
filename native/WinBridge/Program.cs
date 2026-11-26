@@ -100,6 +100,78 @@ internal static class Program
     private static NativeOverlayForm? _overlayForm;
     private static NotifyIcon? _trayIcon;
 
+    private static string? ResolveMonitorDeviceName(int monitorIndex)
+    {
+        lock (_overlayLock)
+        {
+            if (monitorIndex >= 0 && monitorIndex < _monitors.Count)
+                return _monitors[monitorIndex].Device;
+            return _monitors.Count > 0 ? _monitors[0].Device : null;
+        }
+    }
+
+    private static void LoadInitialFeatureConfigsFromDisk()
+    {
+        bool foundColorConfig = false;
+        if (!string.IsNullOrEmpty(_stateFilePath) && File.Exists(_stateFilePath))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(_stateFilePath));
+                var root = doc.RootElement;
+                if (root.TryGetProperty("audioLimiter", out var al) && al.ValueKind == JsonValueKind.Object)
+                {
+                    var parsedAudio = JsonSerializer.Deserialize<AudioLimiterConfigDto>(al.GetRawText(), JsonOpts);
+                    if (parsedAudio != null) ProcessAudioEngine.UpdateConfig(parsedAudio);
+                }
+                if (root.TryGetProperty("robRunOptimizer", out var ro) && ro.ValueKind == JsonValueKind.Object)
+                {
+                    var parsedOpt = JsonSerializer.Deserialize<RobRunOptimizerConfigDto>(ro.GetRawText(), JsonOpts);
+                    if (parsedOpt != null) RobRunOptimizerEngine.UpdateConfig(parsedOpt);
+                }
+                if (root.TryGetProperty("colorFilter", out var cf) && cf.ValueKind == JsonValueKind.Object)
+                {
+                    var parsedColor = JsonSerializer.Deserialize<ColorFilterConfigDto>(cf.GetRawText(), JsonOpts);
+                    if (parsedColor != null)
+                    {
+                        HyperHueEngine.UpdateConfigFromStudio(parsedColor);
+                        foundColorConfig = true;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if (!foundColorConfig)
+        {
+            var migrated = HyperHueEngine.TryMigrateLegacyHyperHueConfig();
+            HyperHueEngine.UpdateConfigFromStudio(migrated);
+        }
+    }
+
+    private static void PersistColorConfigToDisk(ColorFilterConfigDto cfg)
+    {
+        if (string.IsNullOrEmpty(_stateFilePath) || !File.Exists(_stateFilePath)) return;
+        try
+        {
+            var rootNode = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(_stateFilePath));
+            if (rootNode is not System.Text.Json.Nodes.JsonObject obj) return;
+            obj["colorFilter"] = JsonSerializer.SerializeToNode(cfg);
+            File.WriteAllText(_stateFilePath, obj.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch { }
+    }
+
+    private static void RunOnUiThread(Action action)
+    {
+        if (_headlessTestMode || _overlayForm == null || !_overlayForm.IsHandleCreated)
+        {
+            action();
+            return;
+        }
+        try { _overlayForm.BeginInvoke(action); } catch { }
+    }
+
     #region Win32 P/Invoke (Strictly Passive / Own-Process Only)
 
     [DllImport("shcore.dll")]
@@ -381,7 +453,156 @@ internal static class Program
                 case "registerStudio":
                     if (root.TryGetProperty("exePath", out var ep)) _studioExePath = ep.GetString() ?? "";
                     if (root.TryGetProperty("launchArgs", out var la)) _studioLaunchArgs = la.GetString() ?? "";
-                    if (root.TryGetProperty("stateFilePath", out var sf)) _stateFilePath = sf.GetString() ?? "";
+                    if (root.TryGetProperty("stateFilePath", out var sf))
+                    {
+                        _stateFilePath = sf.GetString() ?? "";
+                        RobRunOptimizerEngine.SetBackupDirFromStatePath(_stateFilePath);
+                    }
+                    break;
+
+                case "syncAudioLimiter":
+                    if (root.TryGetProperty("config", out var alCfg) && alCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedAl = JsonSerializer.Deserialize<AudioLimiterConfigDto>(alCfg.GetRawText(), JsonOpts);
+                        if (parsedAl != null) ProcessAudioEngine.UpdateConfig(parsedAl);
+                    }
+                    break;
+
+                case "getAudioDevices":
+                    Emit(new
+                    {
+                        type = "audioDevices",
+                        devices = ProcessAudioEngine.GetPlaybackEndpoints(),
+                        processes = ProcessAudioEngine.ListRunningAudioOrGameProcesses()
+                    });
+                    break;
+
+                case "syncOptimizer":
+                    if (root.TryGetProperty("config", out var optCfg) && optCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedOpt = JsonSerializer.Deserialize<RobRunOptimizerConfigDto>(optCfg.GetRawText(), JsonOpts);
+                        if (parsedOpt != null) RobRunOptimizerEngine.UpdateConfig(parsedOpt);
+                    }
+                    Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                    break;
+
+                case "getOptimizerStatus":
+                    Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                    break;
+
+                case "applyOptimizerNow":
+                    if (root.TryGetProperty("config", out var applyCfg) && applyCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedApply = JsonSerializer.Deserialize<RobRunOptimizerConfigDto>(applyCfg.GetRawText(), JsonOpts);
+                        if (parsedApply != null)
+                        {
+                            var (ok, message) = RobRunOptimizerEngine.ApplyConfigToDisk(parsedApply);
+                            Emit(new { type = "optimizerActionResult", action = "apply", ok, message });
+                            Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                        }
+                    }
+                    break;
+
+                case "restoreOptimizerBackup":
+                    {
+                        var (ok, message) = RobRunOptimizerEngine.RestoreOriginalBackup();
+                        Emit(new { type = "optimizerActionResult", action = "restore", ok, message });
+                        Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                    }
+                    break;
+
+                case "restoreDesktopNow":
+                    {
+                        bool restored = RobRunOptimizerEngine.RestoreDesktopDisplayNow();
+                        Emit(new
+                        {
+                            type = "optimizerActionResult",
+                            action = "restoreDesktop",
+                            ok = restored,
+                            message = restored ? "Restored desktop resolution and refresh rate." : "Desktop is already using normal settings."
+                        });
+                        Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                    }
+                    break;
+
+                case "launchRobRun":
+                    if (root.TryGetProperty("config", out var launchCfg) && launchCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedLaunch = JsonSerializer.Deserialize<RobRunOptimizerConfigDto>(launchCfg.GetRawText(), JsonOpts);
+                        if (parsedLaunch != null)
+                        {
+                            var (ok, message) = RobRunOptimizerEngine.LaunchRobRunOptimized(parsedLaunch);
+                            Emit(new { type = "optimizerActionResult", action = "launch", ok, message });
+                            Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                        }
+                    }
+                    break;
+
+                case "syncColorFilter":
+                    if (root.TryGetProperty("config", out var cfCfg) && cfCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        bool flash = root.TryGetProperty("flash", out var fl) && fl.GetBoolean();
+                        var parsedCf = JsonSerializer.Deserialize<ColorFilterConfigDto>(cfCfg.GetRawText(), JsonOpts);
+                        if (parsedCf != null)
+                        {
+                            RunOnUiThread(() =>
+                            {
+                                HyperHueEngine.UpdateConfigFromStudio(parsedCf, flash);
+                                _trayMenuDirty = true;
+                            });
+                        }
+                    }
+                    break;
+
+                case "getColorStatus":
+                    RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
+                    break;
+
+                case "getMigratedColorConfig":
+                    RunOnUiThread(() => Emit(new
+                    {
+                        type = "colorMigratedConfig",
+                        config = HyperHueEngine.TryMigrateLegacyHyperHueConfig()
+                    }));
+                    break;
+
+                case "previewColorHud":
+                    RunOnUiThread(() => HyperHueEngine.PreviewHud());
+                    break;
+
+                case "unlockGammaRange":
+                    Task.Run(() =>
+                    {
+                        bool unlocked = HyperHueEngine.UnlockGammaRange();
+                        Emit(new
+                        {
+                            type = "colorActionResult",
+                            action = "unlockGamma",
+                            ok = unlocked,
+                            message = unlocked
+                                ? "Unlocked full gamma range. Sign out or restart Windows to apply."
+                                : "Gamma unlock was declined or cancelled."
+                        });
+                    });
+                    break;
+
+                case "captureCleanScreen":
+                    RunOnUiThread(() =>
+                    {
+                        string? dataUrl = HyperHueEngine.CaptureCleanScreenDataUrl();
+                        Emit(new
+                        {
+                            type = "colorScreenCapture",
+                            ok = !string.IsNullOrEmpty(dataUrl),
+                            dataUrl = dataUrl ?? ""
+                        });
+                    });
                     break;
 
                 case "syncOverlay":
@@ -449,6 +670,8 @@ internal static class Program
 
                 case "quit":
                     _running = false;
+                    ProcessAudioEngine.Stop();
+                    RobRunOptimizerEngine.Stop();
                     try { _overlayForm?.BeginInvoke(new Action(() => Application.ExitThread())); } catch { }
                     break;
             }
@@ -484,6 +707,14 @@ internal static class Program
 
                 Emit(BuildReadyPayload());
                 Emit(new { type = "monitors", monitors = CollectMonitorsPayload() });
+                Emit(new
+                {
+                    type = "audioDevices",
+                    devices = ProcessAudioEngine.GetPlaybackEndpoints(),
+                    processes = ProcessAudioEngine.ListRunningAudioOrGameProcesses()
+                });
+                Emit(RobRunOptimizerEngine.BuildStatusPayload());
+                RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
 
                 string? line;
                 while (_running && server.IsConnected && (line = await reader.ReadLineAsync()) != null)
@@ -834,11 +1065,53 @@ internal static class Program
             }
         }
         menu.Items.Add(profilesMenu);
+
+        var colorActive = HyperHueEngine.IsEffectiveActive;
+        var colorToggle = new ToolStripMenuItem(
+            colorActive
+                ? $"✓ Color Filters: {HyperHueEngine.EffectiveDisplayName} (Click to Pause)"
+                : "Color Filters Paused (Click to Activate)");
+        colorToggle.Click += (_, _) =>
+        {
+            HyperHueEngine.ToggleFromTrayOrHotkey();
+            _trayMenuDirty = true;
+        };
+        menu.Items.Add(colorToggle);
+
+        var colorPresetsMenu = new ToolStripMenuItem("Quick Switch Color Filter");
+        var curColorCfg = HyperHueEngine.GetCurrentConfig();
+        foreach (var preset in HyperHueEngine.AllPresets())
+        {
+            var capturedName = preset.name;
+            var item = new ToolStripMenuItem(capturedName)
+            {
+                Checked = string.Equals(capturedName, curColorCfg.activePreset, StringComparison.OrdinalIgnoreCase)
+            };
+            item.Click += (_, _) =>
+            {
+                HyperHueEngine.SelectPresetFromTrayOrHotkey(capturedName);
+                _trayMenuDirty = true;
+            };
+            colorPresetsMenu.DropDownItems.Add(item);
+        }
+        menu.Items.Add(colorPresetsMenu);
         menu.Items.Add(new ToolStripSeparator());
 
         var openStudio = new ToolStripMenuItem("Open ZeroPoint Studio");
         openStudio.Click += (_, _) => LaunchStudioWindow("openStudio");
         menu.Items.Add(openStudio);
+
+        var openColor = new ToolStripMenuItem("Color Filters & Shadow Boost (HyperHue)");
+        openColor.Click += (_, _) => LaunchStudioWindow("openColorFilters");
+        menu.Items.Add(openColor);
+
+        var openAudio = new ToolStripMenuItem("Gunshot Limiter & Footstep EQ");
+        openAudio.Click += (_, _) => LaunchStudioWindow("openAudioLimiter");
+        menu.Items.Add(openAudio);
+
+        var openFps = new ToolStripMenuItem("ROB RUN Competitive FPS Optimizer");
+        openFps.Click += (_, _) => LaunchStudioWindow("openFpsOptimizer");
+        menu.Items.Add(openFps);
 
         var openRange = new ToolStripMenuItem("Launch The Range (3D Aim Trainer)");
         openRange.Click += (_, _) => LaunchStudioWindow("openAimTrainer");
@@ -849,11 +1122,14 @@ internal static class Program
         menu.Items.Add(checkUpd);
 
         menu.Items.Add(new ToolStripSeparator());
-        var quitItem = new ToolStripMenuItem("Quit ZeroPoint Completely");
+        var quitItem = new ToolStripMenuItem("Quit ZeroPoint (Restores Colors & Display)");
         quitItem.Click += (_, _) =>
         {
             if (_studioConnected) Emit(new { type = "trayAction", action = "quitAll" });
             _running = false;
+            HyperHueEngine.ShutdownOnUiThread();
+            ProcessAudioEngine.Stop();
+            RobRunOptimizerEngine.Stop();
             Application.ExitThread();
         };
         menu.Items.Add(quitItem);
@@ -911,7 +1187,22 @@ internal static class Program
         var anim = new NativeAnimController();
         var swFrame = Stopwatch.StartNew();
         var swTopmost = Stopwatch.StartNew();
+        var swColorWatch = Stopwatch.StartNew();
         var swMemTrim = Stopwatch.StartNew();
+
+        LoadInitialFeatureConfigsFromDisk();
+        HyperHueEngine.InitOnUiThread(_stateFilePath, _headlessTestMode, Emit, cfg =>
+        {
+            PersistColorConfigToDisk(cfg);
+            _trayMenuDirty = true;
+        });
+        ProcessAudioEngine.Start(Emit);
+        RobRunOptimizerEngine.Start(
+            _stateFilePath,
+            Emit,
+            () => Emit(new { type = "monitors", monitors = CollectMonitorsPayload() }),
+            ResolveMonitorDeviceName
+        );
 
         _ = Task.Run(_headlessTestMode ? RunStdioTestLoop : RunNamedPipeServerLoop);
         var inputThread = new Thread(RunInputLoop) { IsBackground = true };
@@ -935,6 +1226,12 @@ internal static class Program
             {
                 _trayMenuDirty = false;
                 RebuildNativeTrayMenu();
+            }
+
+            if (swColorWatch.ElapsedMilliseconds >= 400)
+            {
+                swColorWatch.Restart();
+                HyperHueEngine.TickOnUiThread();
             }
 
             bool enabled;
@@ -1014,6 +1311,10 @@ internal static class Program
 
         renderTimer.Start();
         Application.Run();
+
+        HyperHueEngine.ShutdownOnUiThread();
+        ProcessAudioEngine.Stop();
+        RobRunOptimizerEngine.Stop();
 
         if (_trayIcon != null)
         {

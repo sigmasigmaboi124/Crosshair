@@ -50,6 +50,13 @@ let minimizeToTray = true;
 let latestMonitors: BridgeMonitor[] = [];
 let latestOverlayPayload: OverlayPayload | null = null;
 let latestProfilesForBridge: unknown[] = [];
+let latestAudioLimiterConfig: Record<string, unknown> | null = null;
+let latestOptimizerConfig: Record<string, unknown> | null = null;
+let latestColorFilterConfig: Record<string, unknown> | null = null;
+let latestAudioDevicesPayload: { devices: unknown[]; processes: string[] } = { devices: [], processes: [] };
+let latestOptimizerStatus: unknown = null;
+let latestColorStatus: unknown = null;
+let pendingScreenCaptureResolve: ((dataUrl: string | null) => void) | null = null;
 let pendingOpenTab: string | null = null;
 
 let safetyAudit = {
@@ -76,9 +83,16 @@ function getBridgeExecutablePath(): string {
     const prodPath = path.join(process.resourcesPath || '', 'WinBridge', name);
     if (app.isPackaged && fs.existsSync(prodPath)) return prodPath;
     const pubPath = path.join(__dirname, '..', 'native', 'WinBridge', 'publish', name);
-    if (fs.existsSync(pubPath)) return pubPath;
     const devPath = path.join(__dirname, '..', 'native', 'WinBridge', 'out', name);
-    if (fs.existsSync(devPath)) return devPath;
+    const hasPub = fs.existsSync(pubPath);
+    const hasDev = fs.existsSync(devPath);
+    if (hasPub && hasDev) {
+      const pubMtime = fs.statSync(pubPath).mtimeMs;
+      const devMtime = fs.statSync(devPath).mtimeMs;
+      return devMtime >= pubMtime ? devPath : pubPath;
+    }
+    if (hasDev) return devPath;
+    if (hasPub) return pubPath;
   }
   return path.join(process.resourcesPath || '', 'WinBridge', 'ZeroPointOverlay.exe');
 }
@@ -130,6 +144,50 @@ function getAppIcon(): Electron.NativeImage | undefined {
   return undefined;
 }
 
+function tryMigrateStandaloneHyperHue(): Record<string, unknown> | null {
+  try {
+    const legacyPath = path.join(app.getPath('appData'), 'HyperHue', 'settings.json');
+    if (!fs.existsSync(legacyPath)) return null;
+    const raw = JSON.parse(fs.readFileSync(legacyPath, 'utf-8'));
+    if (!raw || typeof raw !== 'object') return null;
+    const mapLook = (l: Record<string, unknown> | undefined) => ({
+      name: typeof l?.Name === 'string' ? l.Name : 'Hyper',
+      builtIn: false,
+      brightness: typeof l?.Brightness === 'number' ? l.Brightness : 0,
+      contrast: typeof l?.Contrast === 'number' ? l.Contrast : 1,
+      temperature: typeof l?.Temperature === 'number' ? l.Temperature : 0,
+      saturation: typeof l?.Saturation === 'number' ? l.Saturation : 1,
+      hue: typeof l?.Hue === 'number' ? l.Hue : 0,
+      shadowBoost: typeof l?.ShadowBoost === 'number' ? l.ShadowBoost : 1,
+    });
+    const corners = ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'];
+    return {
+      enabled: !!raw.Enabled,
+      activePreset: typeof raw.ActivePreset === 'string' ? raw.ActivePreset : 'Hyper',
+      working: mapLook(raw.Working),
+      applied: mapLook(raw.Applied ?? raw.Working),
+      autoApply: raw.AutoApply !== false,
+      customPresets: Array.isArray(raw.CustomPresets)
+        ? raw.CustomPresets.map((c: Record<string, unknown>) => mapLook(c))
+        : [],
+      engineMode: raw.Engine === 1 ? 'amd' : 'screen',
+      shadowBoostEnabled: raw.ShadowBoostEnabled !== false,
+      rules: Array.isArray(raw.Rules)
+        ? raw.Rules.map((r: Record<string, unknown>) => ({
+            process: typeof r?.Process === 'string' ? r.Process : '',
+            preset: typeof r?.Preset === 'string' ? r.Preset : 'Hyper',
+          })).filter((r: { process: string }) => r.process)
+        : [],
+      rulesOnly: !!raw.RulesOnly,
+      hudToasts: raw.HudToasts !== false,
+      hudPinned: !!raw.HudPinned,
+      hudCorner: corners[typeof raw.HudCorner === 'number' ? raw.HudCorner : 1] || 'TopRight',
+    };
+  } catch {
+    return null;
+  }
+}
+
 function loadStoreFromDisk(): Record<string, unknown> | null {
   const candidates = [
     getStorePath(),
@@ -142,14 +200,20 @@ function loadStoreFromDisk(): Record<string, unknown> | null {
       if (fs.existsSync(p)) {
         const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
         if (parsed && typeof parsed === 'object') {
-          return parsed as Record<string, unknown>;
+          const obj = parsed as Record<string, unknown>;
+          if (!obj.colorFilter) {
+            const migrated = tryMigrateStandaloneHyperHue();
+            if (migrated) obj.colorFilter = migrated;
+          }
+          return obj;
         }
       }
     } catch {
       // Try next fallback/backup
     }
   }
-  return null;
+  const migratedOnly = tryMigrateStandaloneHyperHue();
+  return migratedOnly ? { colorFilter: migratedOnly } : null;
 }
 
 function saveStoreToDisk(data: Record<string, unknown>): void {
@@ -228,6 +292,15 @@ function connectToWinBridge(retryCount = 0): void {
     if (latestProfilesForBridge.length > 0) {
       sendBridgeCommand({ cmd: 'syncProfiles', profiles: latestProfilesForBridge });
     }
+    if (latestAudioLimiterConfig) {
+      sendBridgeCommand({ cmd: 'syncAudioLimiter', config: latestAudioLimiterConfig });
+    }
+    if (latestOptimizerConfig) {
+      sendBridgeCommand({ cmd: 'syncOptimizer', config: latestOptimizerConfig });
+    }
+    if (latestColorFilterConfig) {
+      sendBridgeCommand({ cmd: 'syncColorFilter', config: latestColorFilterConfig, flash: false });
+    }
 
     const rl = readline.createInterface({ input: sock });
     rl.on('line', (line) => {
@@ -261,6 +334,50 @@ function connectToWinBridge(retryCount = 0): void {
             }
             break;
 
+          case 'audioTelemetry':
+            mainWindow?.webContents.send('bridge:audioTelemetry', msg);
+            break;
+
+          case 'audioDevices':
+            latestAudioDevicesPayload = {
+              devices: Array.isArray(msg.devices) ? msg.devices : [],
+              processes: Array.isArray(msg.processes) ? msg.processes : [],
+            };
+            mainWindow?.webContents.send('bridge:audioDevices', latestAudioDevicesPayload);
+            break;
+
+          case 'optimizerStatus':
+            latestOptimizerStatus = msg;
+            mainWindow?.webContents.send('bridge:optimizerStatus', msg);
+            break;
+
+          case 'optimizerActionResult':
+            mainWindow?.webContents.send('bridge:optimizerActionResult', msg);
+            break;
+
+          case 'colorStatus':
+            latestColorStatus = msg;
+            mainWindow?.webContents.send('bridge:colorStatus', msg);
+            break;
+
+          case 'colorConfigSync':
+            if (msg.config) latestColorFilterConfig = msg.config;
+            if (msg.status) latestColorStatus = msg.status;
+            mainWindow?.webContents.send('bridge:colorConfigSync', msg);
+            break;
+
+          case 'colorActionResult':
+            mainWindow?.webContents.send('bridge:colorActionResult', msg);
+            break;
+
+          case 'colorScreenCapture':
+            if (pendingScreenCaptureResolve) {
+              const finish = pendingScreenCaptureResolve;
+              pendingScreenCaptureResolve = null;
+              finish(msg.ok && typeof msg.dataUrl === 'string' ? msg.dataUrl : null);
+            }
+            break;
+
           case 'trayAction':
             if (msg.action === 'quitAll') {
               isQuittingEverything = true;
@@ -275,7 +392,13 @@ function connectToWinBridge(retryCount = 0): void {
             } else if (msg.action === 'openStudio') {
               mainWindow?.show();
               mainWindow?.focus();
-            } else if (msg.action === 'openAimTrainer' || msg.action === 'openUpdates') {
+            } else if (
+              msg.action === 'openAimTrainer' ||
+              msg.action === 'openUpdates' ||
+              msg.action === 'openAudioLimiter' ||
+              msg.action === 'openFpsOptimizer' ||
+              msg.action === 'openColorFilters'
+            ) {
               mainWindow?.show();
               mainWindow?.focus();
               mainWindow?.webContents.send('tray:action', { type: msg.action });
@@ -434,6 +557,85 @@ function registerIpcHandlers(): void {
   ipcMain.handle('store:load', () => loadStoreFromDisk());
   ipcMain.on('store:save', (_e, data) => saveStoreToDisk(data as Record<string, unknown>));
 
+  // Gunshot Limiter & Footstep EQ IPC
+  ipcMain.on('audio:sync', (_e, cfg: Record<string, unknown>) => {
+    latestAudioLimiterConfig = cfg;
+    sendBridgeCommand({ cmd: 'syncAudioLimiter', config: cfg });
+  });
+  ipcMain.handle('audio:getDevices', () => {
+    sendBridgeCommand({ cmd: 'getAudioDevices' });
+    return latestAudioDevicesPayload;
+  });
+
+  // ROB RUN Competitive Config & FPS Optimizer IPC
+  ipcMain.on('optimizer:sync', (_e, cfg: Record<string, unknown>) => {
+    latestOptimizerConfig = cfg;
+    sendBridgeCommand({ cmd: 'syncOptimizer', config: cfg });
+  });
+  ipcMain.handle('optimizer:getStatus', () => {
+    sendBridgeCommand({ cmd: 'getOptimizerStatus' });
+    return latestOptimizerStatus;
+  });
+  ipcMain.on('optimizer:applyNow', (_e, cfg: Record<string, unknown>) => {
+    latestOptimizerConfig = cfg;
+    sendBridgeCommand({ cmd: 'applyOptimizerNow', config: cfg });
+  });
+  ipcMain.on('optimizer:restoreBackup', () => {
+    sendBridgeCommand({ cmd: 'restoreOptimizerBackup' });
+  });
+  ipcMain.on('optimizer:restoreDesktop', () => {
+    sendBridgeCommand({ cmd: 'restoreDesktopNow' });
+  });
+  ipcMain.on('optimizer:launchGame', (_e, cfg: Record<string, unknown>) => {
+    latestOptimizerConfig = cfg;
+    sendBridgeCommand({ cmd: 'launchRobRun', config: cfg });
+  });
+  ipcMain.on('optimizer:openPath', (_e, targetPath: string) => {
+    if (targetPath && typeof targetPath === 'string' && fs.existsSync(targetPath)) {
+      const stat = fs.statSync(targetPath);
+      if (stat.isDirectory()) shell.openPath(targetPath).catch(() => {});
+      else shell.showItemInFolder(targetPath);
+    }
+  });
+
+  // Color Filters & Shadow Boost (Unified HyperHue Engine) IPC
+  ipcMain.on('color:sync', (_e, payload: { config: Record<string, unknown>; flash?: boolean }) => {
+    latestColorFilterConfig = payload.config;
+    sendBridgeCommand({ cmd: 'syncColorFilter', config: payload.config, flash: !!payload.flash });
+  });
+  ipcMain.handle('color:getStatus', () => {
+    sendBridgeCommand({ cmd: 'getColorStatus' });
+    return latestColorStatus;
+  });
+  ipcMain.on('color:previewHud', () => {
+    sendBridgeCommand({ cmd: 'previewColorHud' });
+  });
+  ipcMain.on('color:unlockGamma', () => {
+    sendBridgeCommand({ cmd: 'unlockGammaRange' });
+  });
+  ipcMain.handle('color:captureScreen', async () => {
+    const wasVisible = mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible();
+    if (wasVisible && mainWindow) {
+      mainWindow.setOpacity(0);
+    }
+    await new Promise((r) => setTimeout(r, 200));
+    const dataUrl = await new Promise<string | null>((resolve) => {
+      pendingScreenCaptureResolve = resolve;
+      sendBridgeCommand({ cmd: 'captureCleanScreen' });
+      setTimeout(() => {
+        if (pendingScreenCaptureResolve === resolve) {
+          pendingScreenCaptureResolve = null;
+          resolve(null);
+        }
+      }, 2500);
+    });
+    if (wasVisible && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setOpacity(1);
+      mainWindow.focus();
+    }
+    return dataUrl;
+  });
+
   // Auto-Updater IPC (GitHub Releases + Commits)
   ipcMain.handle('updater:getState', () => updater?.getState() ?? null);
   ipcMain.handle('updater:check', () => updater?.checkForUpdates() ?? null);
@@ -448,7 +650,15 @@ function registerIpcHandlers(): void {
 for (const arg of process.argv) {
   if (arg.startsWith('--open-tab=')) {
     const val = arg.slice('--open-tab='.length);
-    if (val === 'openAimTrainer' || val === 'openUpdates') pendingOpenTab = val;
+    if (
+      val === 'openAimTrainer' ||
+      val === 'openUpdates' ||
+      val === 'openAudioLimiter' ||
+      val === 'openFpsOptimizer' ||
+      val === 'openColorFilters'
+    ) {
+      pendingOpenTab = val;
+    }
   }
 }
 

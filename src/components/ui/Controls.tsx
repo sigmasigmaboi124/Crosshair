@@ -26,9 +26,9 @@ export const SliderRow: React.FC<SliderRowProps> = ({
 
   return (
     <div className={`space-y-1.5 ${disabled ? 'opacity-35 pointer-events-none' : ''}`}>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-[#a1a1ad] font-medium">{label}</span>
-        <span className="font-mono text-[11px] text-[#e4e4e8] tabular-nums">
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="text-[#a1a1ad] font-medium min-w-0 truncate">{label}</span>
+        <span className="font-mono text-[11px] text-[#e4e4e8] tabular-nums shrink-0">
           {formatted}
           {unit && <span className="text-[#6f6f7b] ml-0.5">{unit}</span>}
         </span>
