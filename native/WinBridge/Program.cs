@@ -129,6 +129,11 @@ internal static class Program
                     var parsedOpt = JsonSerializer.Deserialize<RobRunOptimizerConfigDto>(ro.GetRawText(), JsonOpts);
                     if (parsedOpt != null) RobRunOptimizerEngine.UpdateConfig(parsedOpt);
                 }
+                if (root.TryGetProperty("systemTuner", out var st) && st.ValueKind == JsonValueKind.Object)
+                {
+                    var parsedTuner = JsonSerializer.Deserialize<SystemTunerConfigDto>(st.GetRawText(), JsonOpts);
+                    if (parsedTuner != null) SystemTunerEngine.UpdateConfig(parsedTuner);
+                }
                 if (root.TryGetProperty("colorFilter", out var cf) && cf.ValueKind == JsonValueKind.Object)
                 {
                     var parsedColor = JsonSerializer.Deserialize<ColorFilterConfigDto>(cf.GetRawText(), JsonOpts);
@@ -605,6 +610,74 @@ internal static class Program
                     });
                     break;
 
+                case "syncSystemTuner":
+                    if (root.TryGetProperty("config", out var stCfg) && stCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedSt = JsonSerializer.Deserialize<SystemTunerConfigDto>(stCfg.GetRawText(), JsonOpts);
+                        if (parsedSt != null) SystemTunerEngine.UpdateConfig(parsedSt);
+                    }
+                    Emit(SystemTunerEngine.BuildStatusPayload());
+                    break;
+
+                case "getSystemTunerStatus":
+                    Emit(SystemTunerEngine.BuildStatusPayload());
+                    break;
+
+                case "applySystemUserTweaks":
+                    if (root.TryGetProperty("config", out var stUserCfg) && stUserCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedUser = JsonSerializer.Deserialize<SystemTunerConfigDto>(stUserCfg.GetRawText(), JsonOpts);
+                        if (parsedUser != null)
+                        {
+                            var (ok, message) = SystemTunerEngine.ApplyUserTweaksNow(parsedUser);
+                            Emit(new { type = "systemTunerActionResult", action = "applyUser", ok, message });
+                            Emit(SystemTunerEngine.BuildStatusPayload());
+                        }
+                    }
+                    break;
+
+                case "applySystemKernelTweaks":
+                    if (root.TryGetProperty("config", out var stKernelCfg) && stKernelCfg.ValueKind == JsonValueKind.Object)
+                    {
+                        var parsedKernel = JsonSerializer.Deserialize<SystemTunerConfigDto>(stKernelCfg.GetRawText(), JsonOpts);
+                        if (parsedKernel != null)
+                        {
+                            Task.Run(() =>
+                            {
+                                var (ok, message) = SystemTunerEngine.ApplyElevatedKernelAndNetworkTweaks(parsedKernel);
+                                Emit(new { type = "systemTunerActionResult", action = "applyKernel", ok, message });
+                                Emit(SystemTunerEngine.BuildStatusPayload());
+                            });
+                        }
+                    }
+                    break;
+
+                case "restoreSystemDefaults":
+                    Task.Run(() =>
+                    {
+                        var (ok, message) = SystemTunerEngine.RestoreWindowsDefaults();
+                        Emit(new { type = "systemTunerActionResult", action = "restore", ok, message });
+                        Emit(SystemTunerEngine.BuildStatusPayload());
+                    });
+                    break;
+
+                case "purgeStandbyRam":
+                    {
+                        var (ok, message) = SystemTunerEngine.PurgeBackgroundMemory();
+                        Emit(new { type = "systemTunerActionResult", action = "purgeRam", ok, message });
+                        Emit(SystemTunerEngine.BuildStatusPayload());
+                    }
+                    break;
+
+                case "cleanShaderCache":
+                    Task.Run(() =>
+                    {
+                        var (ok, message) = SystemTunerEngine.CleanTempAndShaderCache();
+                        Emit(new { type = "systemTunerActionResult", action = "cleanCache", ok, message });
+                        Emit(SystemTunerEngine.BuildStatusPayload());
+                    });
+                    break;
+
                 case "syncOverlay":
                     lock (_overlayLock)
                     {
@@ -670,6 +743,7 @@ internal static class Program
 
                 case "quit":
                     _running = false;
+                    SystemTunerEngine.Shutdown();
                     ProcessAudioEngine.Stop();
                     RobRunOptimizerEngine.Stop();
                     try { _overlayForm?.BeginInvoke(new Action(() => Application.ExitThread())); } catch { }
@@ -713,6 +787,7 @@ internal static class Program
                     devices = ProcessAudioEngine.GetPlaybackEndpoints(),
                     processes = ProcessAudioEngine.ListRunningAudioOrGameProcesses()
                 });
+                Emit(SystemTunerEngine.BuildStatusPayload());
                 Emit(RobRunOptimizerEngine.BuildStatusPayload());
                 RunOnUiThread(() => Emit(HyperHueEngine.BuildStatusPayload()));
 
@@ -1190,6 +1265,7 @@ internal static class Program
         var swColorWatch = Stopwatch.StartNew();
         var swMemTrim = Stopwatch.StartNew();
 
+        SystemTunerEngine.Init(_stateFilePath);
         LoadInitialFeatureConfigsFromDisk();
         HyperHueEngine.InitOnUiThread(_stateFilePath, _headlessTestMode, Emit, cfg =>
         {
@@ -1313,6 +1389,7 @@ internal static class Program
         Application.Run();
 
         HyperHueEngine.ShutdownOnUiThread();
+        SystemTunerEngine.Shutdown();
         ProcessAudioEngine.Stop();
         RobRunOptimizerEngine.Stop();
 

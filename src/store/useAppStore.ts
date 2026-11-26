@@ -16,12 +16,15 @@ import {
   RobRunOptimizerStatus,
   SafetyAuditStatus,
   SavedProfile,
+  SystemTunerConfig,
+  SystemTunerStatus,
   UpdateChannel,
   UpdaterState,
   createDefaultAudioLimiterConfig,
   createDefaultColorFilterConfig,
   createDefaultCrosshair,
   createDefaultRobRunOptimizerConfig,
+  createDefaultSystemTunerConfig,
 } from '../types/crosshair';
 import { COMMUNITY_PRESETS, CommunityPresetItem } from '../data/presets';
 import { AchievementDefinition, createInitialAchievementProgress, evaluateAchievements } from '../data/achievements';
@@ -58,6 +61,7 @@ interface PersistedData {
   audioLimiter: AudioLimiterConfig;
   robRunOptimizer: RobRunOptimizerConfig;
   colorFilter: ColorFilterConfig;
+  systemTuner: SystemTunerConfig;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -217,6 +221,16 @@ interface ElectronAPI {
   onColorStatus: (cb: (status: ColorFilterStatus) => void) => () => void;
   onColorConfigSync: (cb: (payload: { config: ColorFilterConfig; status: ColorFilterStatus }) => void) => () => void;
   onColorActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
+
+  syncSystemTuner: (cfg: SystemTunerConfig) => void;
+  getSystemTunerStatus: () => Promise<SystemTunerStatus | null>;
+  applySystemUserTweaks: (cfg: SystemTunerConfig) => void;
+  applySystemKernelTweaks: (cfg: SystemTunerConfig) => void;
+  restoreSystemDefaults: () => void;
+  purgeStandbyRam: () => void;
+  cleanShaderCache: () => void;
+  onSystemTunerStatus: (cb: (status: SystemTunerStatus) => void) => () => void;
+  onSystemTunerActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
 }
 
 export function getElectronAPI(): ElectronAPI | undefined {
@@ -250,6 +264,37 @@ export function useAppStore() {
   });
 
   const [robRunOptimizer, setRobRunOptimizer] = useState<RobRunOptimizerConfig>(createDefaultRobRunOptimizerConfig);
+  const [systemTuner, setSystemTuner] = useState<SystemTunerConfig>(createDefaultSystemTunerConfig);
+  const [systemTunerStatus, setSystemTunerStatus] = useState<SystemTunerStatus>({
+    cpuName: 'Multi-Core x64 Processor',
+    cpuThreads: 16,
+    gpuName: 'DirectX 12 GPU',
+    totalRamGb: 32,
+    usedRamGb: 11.4,
+    availRamGb: 20.6,
+    ramLoadPct: 36,
+    timerResolutionMs: 0.5,
+    timerLocked: true,
+    activePowerPlanGuid: '',
+    activePowerPlanName: 'Ultimate Performance',
+    hasSystemBackup: false,
+    optimizationScorePct: 82,
+    liveStates: {
+      rawMouseInput: true,
+      disableGameDvr: true,
+      enableGameMode: true,
+      disableTransparency: false,
+      disableBackgroundApps: true,
+      fastKeyboardResponse: true,
+      cpuForegroundBoost: false,
+      win32PriorityValue: 2,
+      mmcssGamesPriority: true,
+      disablePowerThrottling: false,
+      enableHags: true,
+      disableMpo: false,
+      tcpLowLatency: false,
+    },
+  });
   const [colorFilter, setColorFilter] = useState<ColorFilterConfig>(createDefaultColorFilterConfig);
   const [colorStatus, setColorStatus] = useState<ColorFilterStatus>({
     effectiveActive: false,
@@ -441,6 +486,12 @@ export function useAppStore() {
                 : defColor.hotkeys,
           });
         }
+        if (raw.systemTuner && typeof raw.systemTuner === 'object') {
+          setSystemTuner({
+            ...createDefaultSystemTunerConfig(),
+            ...raw.systemTuner,
+          });
+        }
       }
       if (api) {
         try {
@@ -459,6 +510,8 @@ export function useAppStore() {
           if (!cancelled && optSt) setOptimizerStatus(optSt);
           const colSt = await api.getColorStatus();
           if (!cancelled && colSt) setColorStatus(colSt);
+          const tunSt = await api.getSystemTunerStatus();
+          if (!cancelled && tunSt) setSystemTunerStatus(tunSt);
         } catch {
           // Ignore
         }
@@ -486,6 +539,7 @@ export function useAppStore() {
       audioLimiter,
       robRunOptimizer,
       colorFilter,
+      systemTuner,
     };
     const api = getElectronAPI();
     if (api) api.savePersistedState(data);
@@ -514,6 +568,7 @@ export function useAppStore() {
     audioLimiter,
     robRunOptimizer,
     colorFilter,
+    systemTuner,
   ]);
 
   useEffect(() => {
@@ -597,6 +652,13 @@ export function useAppStore() {
     if (!api) return;
     api.syncOptimizerConfig(robRunOptimizer);
   }, [hydrated, robRunOptimizer]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const api = getElectronAPI();
+    if (!api) return;
+    api.syncSystemTuner(systemTuner);
+  }, [hydrated, systemTuner]);
 
   const colorFlashRef = useRef(false);
   useEffect(() => {
@@ -745,6 +807,14 @@ export function useAppStore() {
       api.onColorActionResult((res) => {
         pushToast(
           res.ok ? 'Color Filter' : 'Color Filter Notice',
+          res.message,
+          res.ok ? 'emerald' : 'amber'
+        );
+      }),
+      api.onSystemTunerStatus((st) => setSystemTunerStatus(st)),
+      api.onSystemTunerActionResult((res) => {
+        pushToast(
+          res.ok ? 'PC & FPS Optimizer' : 'Optimizer Notice',
           res.message,
           res.ok ? 'emerald' : 'amber'
         );
@@ -984,6 +1054,89 @@ export function useAppStore() {
       const api = getElectronAPI();
       if (!api) return null;
       return api.captureCleanScreen();
+    },
+    systemTuner,
+    setSystemTuner,
+    systemTunerStatus,
+    refreshSystemTunerStatus: async () => {
+      const api = getElectronAPI();
+      if (!api) return;
+      const st = await api.getSystemTunerStatus();
+      if (st) setSystemTunerStatus(st);
+    },
+    applySystemUserTweaksNow: (nextCfg?: SystemTunerConfig) => {
+      const target = nextCfg ?? systemTuner;
+      const api = getElectronAPI();
+      if (api) api.applySystemUserTweaks(target);
+      else {
+        setSystemTunerStatus((prev) => ({
+          ...prev,
+          timerLocked: target.lockTimerResolution,
+          timerResolutionMs: target.lockTimerResolution ? 0.5 : 15.62,
+          activePowerPlanName: target.activateUltimatePower ? 'Ultimate Performance' : 'Balanced',
+          hasSystemBackup: true,
+          liveStates: {
+            ...prev.liveStates,
+            rawMouseInput: target.rawMouseInput,
+            disableGameDvr: target.disableGameDvr,
+            enableGameMode: target.enableGameMode,
+            disableTransparency: target.disableTransparency,
+            disableBackgroundApps: target.disableBackgroundApps,
+            fastKeyboardResponse: target.fastKeyboardResponse,
+          },
+        }));
+        pushToast('PC Tweaks Applied', 'Updated mouse, GameDVR, Game Mode, power plan, and 0.5ms timer.', 'emerald');
+      }
+    },
+    applySystemKernelTweaksNow: (nextCfg?: SystemTunerConfig) => {
+      const target = nextCfg ?? systemTuner;
+      const api = getElectronAPI();
+      if (api) api.applySystemKernelTweaks(target);
+      else {
+        setSystemTunerStatus((prev) => ({
+          ...prev,
+          hasSystemBackup: true,
+          optimizationScorePct: 100,
+          liveStates: {
+            ...prev.liveStates,
+            cpuForegroundBoost: target.cpuForegroundBoost,
+            win32PriorityValue: target.cpuForegroundBoost ? 38 : 2,
+            mmcssGamesPriority: target.mmcssGamesPriority,
+            disablePowerThrottling: target.disablePowerThrottling,
+            enableHags: target.enableHags,
+            disableMpo: target.disableMpo,
+            tcpLowLatency: target.tcpLowLatency,
+          },
+        }));
+        pushToast('Kernel & Network Applied', 'Applied CPU scheduler, MMCSS, GPU HAGS, and TCP No-Delay.', 'emerald');
+      }
+    },
+    rollbackAllOptimizations: () => {
+      const api = getElectronAPI();
+      if (api) {
+        api.restoreSystemDefaults();
+        api.restoreOptimizerBackup();
+        api.restoreDesktopNow();
+      } else {
+        setSystemTunerStatus((prev) => ({
+          ...prev,
+          timerLocked: false,
+          timerResolutionMs: 15.62,
+          activePowerPlanName: 'Balanced',
+          optimizationScorePct: 36,
+        }));
+        pushToast('Rolled Back All Tweaks', 'Restored original Windows, display, and game settings.', 'emerald');
+      }
+    },
+    purgeStandbyRamNow: () => {
+      const api = getElectronAPI();
+      if (api) api.purgeStandbyRam();
+      else pushToast('RAM Trimmed', 'Trimmed idle background working sets.', 'emerald');
+    },
+    cleanShaderCacheNow: () => {
+      const api = getElectronAPI();
+      if (api) api.cleanShaderCache();
+      else pushToast('Cache Cleaned', 'Cleared stale temp and shader cache files.', 'emerald');
     },
     liveInput,
     monitors,

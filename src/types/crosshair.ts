@@ -419,10 +419,60 @@ export interface RobRunOptimizerConfig {
   refreshRateHz: number;
   fullscreenMode: number;
   gpuHighPerformance: boolean;
+  lockConfigReadOnly: boolean;
   flagNoLog: boolean;
   flagBorderless: boolean;
   flagForceD3d11: boolean;
   extraLaunchFlags: string;
+}
+
+export interface SystemTunerConfig {
+  lockTimerResolution: boolean;
+  activateUltimatePower: boolean;
+  autoTrimRamOnGameLaunch: boolean;
+  rawMouseInput: boolean;
+  disableGameDvr: boolean;
+  enableGameMode: boolean;
+  disableTransparency: boolean;
+  disableBackgroundApps: boolean;
+  fastKeyboardResponse: boolean;
+  cpuForegroundBoost: boolean;
+  mmcssGamesPriority: boolean;
+  disablePowerThrottling: boolean;
+  enableHags: boolean;
+  disableMpo: boolean;
+  tcpLowLatency: boolean;
+}
+
+export interface SystemTunerStatus {
+  cpuName: string;
+  cpuThreads: number;
+  gpuName: string;
+  totalRamGb: number;
+  usedRamGb: number;
+  availRamGb: number;
+  ramLoadPct: number;
+  timerResolutionMs: number;
+  timerLocked: boolean;
+  activePowerPlanGuid: string;
+  activePowerPlanName: string;
+  hasSystemBackup: boolean;
+  optimizationScorePct: number;
+  liveStates: {
+    rawMouseInput: boolean;
+    disableGameDvr: boolean;
+    enableGameMode: boolean;
+    disableTransparency: boolean;
+    disableBackgroundApps: boolean;
+    fastKeyboardResponse: boolean;
+    cpuForegroundBoost: boolean;
+    win32PriorityValue: number;
+    mmcssGamesPriority: boolean;
+    disablePowerThrottling: boolean;
+    enableHags: boolean;
+    disableMpo: boolean;
+    tcpLowLatency: boolean;
+  };
 }
 
 export interface DisplayModeOption {
@@ -676,10 +726,31 @@ export function createDefaultRobRunOptimizerConfig(): RobRunOptimizerConfig {
     refreshRateHz: 240,
     fullscreenMode: 1,
     gpuHighPerformance: true,
+    lockConfigReadOnly: true,
     flagNoLog: true,
     flagBorderless: true,
     flagForceD3d11: false,
     extraLaunchFlags: '',
+  };
+}
+
+export function createDefaultSystemTunerConfig(): SystemTunerConfig {
+  return {
+    lockTimerResolution: true,
+    activateUltimatePower: true,
+    autoTrimRamOnGameLaunch: true,
+    rawMouseInput: true,
+    disableGameDvr: true,
+    enableGameMode: true,
+    disableTransparency: false,
+    disableBackgroundApps: true,
+    fastKeyboardResponse: true,
+    cpuForegroundBoost: true,
+    mmcssGamesPriority: true,
+    disablePowerThrottling: true,
+    enableHags: true,
+    disableMpo: false,
+    tcpLowLatency: true,
   };
 }
 

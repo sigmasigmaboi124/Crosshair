@@ -76,6 +76,17 @@ export interface ElectronBridgeAPI {
   onColorStatus: (cb: (status: unknown) => void) => () => void;
   onColorConfigSync: (cb: (payload: { config: unknown; status: unknown }) => void) => () => void;
   onColorActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
+
+  // PC & Latency Tuner
+  syncSystemTuner: (cfg: unknown) => void;
+  getSystemTunerStatus: () => Promise<unknown>;
+  applySystemUserTweaks: (cfg: unknown) => void;
+  applySystemKernelTweaks: (cfg: unknown) => void;
+  restoreSystemDefaults: () => void;
+  purgeStandbyRam: () => void;
+  cleanShaderCache: () => void;
+  onSystemTunerStatus: (cb: (status: unknown) => void) => () => void;
+  onSystemTunerActionResult: (cb: (res: { action: string; ok: boolean; message: string }) => void) => () => void;
 }
 
 const api: ElectronBridgeAPI = {
@@ -189,6 +200,24 @@ const api: ElectronBridgeAPI = {
     const handler = (_e: Electron.IpcRendererEvent, data: { action: string; ok: boolean; message: string }) => cb(data);
     ipcRenderer.on('bridge:colorActionResult', handler);
     return () => ipcRenderer.removeListener('bridge:colorActionResult', handler);
+  },
+
+  syncSystemTuner: (cfg) => ipcRenderer.send('tuner:sync', cfg),
+  getSystemTunerStatus: () => ipcRenderer.invoke('tuner:getStatus'),
+  applySystemUserTweaks: (cfg) => ipcRenderer.send('tuner:applyUser', cfg),
+  applySystemKernelTweaks: (cfg) => ipcRenderer.send('tuner:applyKernel', cfg),
+  restoreSystemDefaults: () => ipcRenderer.send('tuner:restoreDefaults'),
+  purgeStandbyRam: () => ipcRenderer.send('tuner:purgeRam'),
+  cleanShaderCache: () => ipcRenderer.send('tuner:cleanCache'),
+  onSystemTunerStatus: (cb) => {
+    const handler = (_e: Electron.IpcRendererEvent, data: unknown) => cb(data);
+    ipcRenderer.on('bridge:systemTunerStatus', handler);
+    return () => ipcRenderer.removeListener('bridge:systemTunerStatus', handler);
+  },
+  onSystemTunerActionResult: (cb) => {
+    const handler = (_e: Electron.IpcRendererEvent, data: { action: string; ok: boolean; message: string }) => cb(data);
+    ipcRenderer.on('bridge:systemTunerActionResult', handler);
+    return () => ipcRenderer.removeListener('bridge:systemTunerActionResult', handler);
   },
 };
 

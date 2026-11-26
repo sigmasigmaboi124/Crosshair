@@ -53,9 +53,11 @@ let latestProfilesForBridge: unknown[] = [];
 let latestAudioLimiterConfig: Record<string, unknown> | null = null;
 let latestOptimizerConfig: Record<string, unknown> | null = null;
 let latestColorFilterConfig: Record<string, unknown> | null = null;
+let latestSystemTunerConfig: Record<string, unknown> | null = null;
 let latestAudioDevicesPayload: { devices: unknown[]; processes: string[] } = { devices: [], processes: [] };
 let latestOptimizerStatus: unknown = null;
 let latestColorStatus: unknown = null;
+let latestSystemTunerStatus: unknown = null;
 let pendingScreenCaptureResolve: ((dataUrl: string | null) => void) | null = null;
 let pendingOpenTab: string | null = null;
 
@@ -301,6 +303,9 @@ function connectToWinBridge(retryCount = 0): void {
     if (latestColorFilterConfig) {
       sendBridgeCommand({ cmd: 'syncColorFilter', config: latestColorFilterConfig, flash: false });
     }
+    if (latestSystemTunerConfig) {
+      sendBridgeCommand({ cmd: 'syncSystemTuner', config: latestSystemTunerConfig });
+    }
 
     const rl = readline.createInterface({ input: sock });
     rl.on('line', (line) => {
@@ -368,6 +373,15 @@ function connectToWinBridge(retryCount = 0): void {
 
           case 'colorActionResult':
             mainWindow?.webContents.send('bridge:colorActionResult', msg);
+            break;
+
+          case 'systemTunerStatus':
+            latestSystemTunerStatus = msg;
+            mainWindow?.webContents.send('bridge:systemTunerStatus', msg);
+            break;
+
+          case 'systemTunerActionResult':
+            mainWindow?.webContents.send('bridge:systemTunerActionResult', msg);
             break;
 
           case 'colorScreenCapture':
@@ -612,6 +626,33 @@ function registerIpcHandlers(): void {
   });
   ipcMain.on('color:unlockGamma', () => {
     sendBridgeCommand({ cmd: 'unlockGammaRange' });
+  });
+
+  // System PC & Latency Tuner (HyperTune-style) IPC
+  ipcMain.on('tuner:sync', (_e, cfg: Record<string, unknown>) => {
+    latestSystemTunerConfig = cfg;
+    sendBridgeCommand({ cmd: 'syncSystemTuner', config: cfg });
+  });
+  ipcMain.handle('tuner:getStatus', () => {
+    sendBridgeCommand({ cmd: 'getSystemTunerStatus' });
+    return latestSystemTunerStatus;
+  });
+  ipcMain.on('tuner:applyUser', (_e, cfg: Record<string, unknown>) => {
+    latestSystemTunerConfig = cfg;
+    sendBridgeCommand({ cmd: 'applySystemUserTweaks', config: cfg });
+  });
+  ipcMain.on('tuner:applyKernel', (_e, cfg: Record<string, unknown>) => {
+    latestSystemTunerConfig = cfg;
+    sendBridgeCommand({ cmd: 'applySystemKernelTweaks', config: cfg });
+  });
+  ipcMain.on('tuner:restoreDefaults', () => {
+    sendBridgeCommand({ cmd: 'restoreSystemDefaults' });
+  });
+  ipcMain.on('tuner:purgeRam', () => {
+    sendBridgeCommand({ cmd: 'purgeStandbyRam' });
+  });
+  ipcMain.on('tuner:cleanCache', () => {
+    sendBridgeCommand({ cmd: 'cleanShaderCache' });
   });
   ipcMain.handle('color:captureScreen', async () => {
     const wasVisible = mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible();

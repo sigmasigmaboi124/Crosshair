@@ -47,7 +47,8 @@ public sealed class RobRunOptimizerConfigDto
     public int fullscreenMode { get; set; } = 1;                  // 1 = Borderless Fullscreen (Crosshair Compatible), 0 = Exclusive
     public bool gpuHighPerformance { get; set; } = true;
 
-    // Launch Flags
+    // Launch Flags & Config Lock
+    public bool lockConfigReadOnly { get; set; } = true;
     public bool flagNoLog { get; set; } = true;
     public bool flagBorderless { get; set; } = true;
     public bool flagForceD3d11 { get; set; } = false;
@@ -225,6 +226,13 @@ internal static class RobRunOptimizerEngine
         {
             try
             {
+                // Unlock ReadOnly attribute first so we can cleanly write the competitive config
+                var attrs = File.GetAttributes(file);
+                if ((attrs & FileAttributes.ReadOnly) != 0)
+                {
+                    File.SetAttributes(file, attrs & ~FileAttributes.ReadOnly);
+                }
+
                 var parsed = JsonNode.Parse(File.ReadAllText(file)) as JsonObject ?? new JsonObject();
                 parsed["setting_quality"] = "custom";
                 parsed["settings_grass"] = cfg.grassQuality;
@@ -247,6 +255,11 @@ internal static class RobRunOptimizerEngine
                 parsed["performance_info_fps"] = cfg.showFpsCounter;
 
                 File.WriteAllText(file, parsed.ToJsonString());
+
+                if (cfg.lockConfigReadOnly)
+                {
+                    File.SetAttributes(file, File.GetAttributes(file) | FileAttributes.ReadOnly);
+                }
                 patchedCount++;
             }
             catch { }
@@ -318,6 +331,12 @@ internal static class RobRunOptimizerEngine
                     {
                         string? dir = Path.GetDirectoryName(path);
                         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                        if (File.Exists(path))
+                        {
+                            var attrs = File.GetAttributes(path);
+                            if ((attrs & FileAttributes.ReadOnly) != 0)
+                                File.SetAttributes(path, attrs & ~FileAttributes.ReadOnly);
+                        }
                         File.WriteAllText(path, rawContent);
                     }
                 }
@@ -500,6 +519,7 @@ internal static class RobRunOptimizerEngine
             if (isRunning && !_wasGameRunning)
             {
                 _wasGameRunning = true;
+                SystemTunerEngine.OnWatchedGameStarted();
                 if (cfg.autoOptimizeOnLaunch)
                 {
                     ApplyConfigToDisk(cfg);
