@@ -435,9 +435,10 @@ internal static class ProcessAudioEngine
                 foundAudioSession
             );
 
-            Thread.Sleep(foundAudioSession ? 4 : 120);
+            Thread.Sleep(foundAudioSession ? 12 : 250);
         }
 
+        ReleaseCachedSession();
         loopbackPipeline?.Dispose();
         RestoreAllSessionVolumes();
     }
@@ -467,22 +468,39 @@ internal static class ProcessAudioEngine
         return false;
     }
 
-    private static bool ProcessTargetAudioSessions(
-        uint targetPid,
-        AudioGameProfileDto prof,
-        ref float currentGain,
-        out float inputDb,
-        out float outputDb,
-        out float gainReductionDb,
-        out float activeLiftDb)
+    private sealed class CachedTargetSession : IDisposable
     {
-        inputDb = -60f;
-        outputDb = -60f;
-        gainReductionDb = 0f;
-        activeLiftDb = 0f;
-        float maxRawPeak = 0f;
-        bool matchedAny = false;
+        public uint Pid;
+        public string InstanceId = "";
+        public object? ComSessionObj;
+        public IAudioMeterInformation? Meter;
+        public ISimpleAudioVolume? Volume;
+        public float LastAppliedVol = -1f;
 
+        public void Dispose()
+        {
+            Meter = null;
+            Volume = null;
+            if (ComSessionObj != null)
+            {
+                try { Marshal.ReleaseComObject(ComSessionObj); } catch { }
+                ComSessionObj = null;
+            }
+        }
+    }
+
+    private static CachedTargetSession? _cachedSession;
+    private static readonly Stopwatch _sessionRescanWatch = Stopwatch.StartNew();
+
+    private static void ReleaseCachedSession()
+    {
+        _cachedSession?.Dispose();
+        _cachedSession = null;
+    }
+
+    private static bool TryAcquireCachedSession(uint targetPid)
+    {
+        ReleaseCachedSession();
         try
         {
             var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorComObject();
@@ -505,30 +523,31 @@ internal static class ProcessAudioEngine
                                     {
                                         if (ctrl is IAudioSessionControl2 ctrl2 &&
                                             ctrl2.GetProcessId(out uint sesPid) == 0 &&
-                                            sesPid == targetPid)
+                                            sesPid == targetPid &&
+                                            ctrl is IAudioMeterInformation meter &&
+                                            ctrl is ISimpleAudioVolume vol)
                                         {
-                                            matchedAny = true;
                                             ctrl2.GetSessionInstanceIdentifier(out string instId);
-                                            if (ctrl is IAudioMeterInformation meter && meter.GetPeakValue(out float peak) == 0)
+                                            if (!string.IsNullOrEmpty(instId) && !_savedSessionVolumes.ContainsKey(instId))
                                             {
-                                                if (peak > maxRawPeak) maxRawPeak = peak;
+                                                if (vol.GetMasterVolume(out float orig) == 0)
+                                                    _savedSessionVolumes[instId] = orig > 0.05f ? orig : 1.0f;
                                             }
-
-                                            if (ctrl is ISimpleAudioVolume vol)
+                                            _cachedSession = new CachedTargetSession
                                             {
-                                                if (!string.IsNullOrEmpty(instId) && !_savedSessionVolumes.ContainsKey(instId))
-                                                {
-                                                    if (vol.GetMasterVolume(out float orig) == 0)
-                                                    {
-                                                        _savedSessionVolumes[instId] = orig > 0.05f ? orig : 1.0f;
-                                                    }
-                                                }
-
-                                                float targetGain = ComputeEnvelopeGain(maxRawPeak, prof, ref currentGain, out inputDb, out outputDb, out gainReductionDb, out activeLiftDb);
-                                                float userBase = (!string.IsNullOrEmpty(instId) && _savedSessionVolumes.TryGetValue(instId, out float b)) ? b : 1.0f;
-                                                float finalVol = Math.Clamp(userBase * targetGain, 0.02f, 1.0f);
-                                                vol.SetMasterVolume(finalVol, ref _audioCtxGuid);
-                                            }
+                                                Pid = targetPid,
+                                                InstanceId = instId ?? "",
+                                                ComSessionObj = ctrl,
+                                                Meter = meter,
+                                                Volume = vol,
+                                                LastAppliedVol = -1f
+                                            };
+                                            Marshal.ReleaseComObject(sesEnum);
+                                            Marshal.ReleaseComObject(mgr);
+                                            Marshal.ReleaseComObject(dev);
+                                            Marshal.ReleaseComObject(col);
+                                            Marshal.ReleaseComObject(enumerator);
+                                            return true;
                                         }
                                         Marshal.ReleaseComObject(ctrl);
                                     }
@@ -545,8 +564,64 @@ internal static class ProcessAudioEngine
             Marshal.ReleaseComObject(enumerator);
         }
         catch { }
+        return false;
+    }
 
-        return matchedAny;
+    private static bool ProcessTargetAudioSessions(
+        uint targetPid,
+        AudioGameProfileDto prof,
+        ref float currentGain,
+        out float inputDb,
+        out float outputDb,
+        out float gainReductionDb,
+        out float activeLiftDb)
+    {
+        inputDb = -60f;
+        outputDb = -60f;
+        gainReductionDb = 0f;
+        activeLiftDb = 0f;
+
+        if (_cachedSession == null || _cachedSession.Pid != targetPid)
+        {
+            if (_sessionRescanWatch.ElapsedMilliseconds < 900 && _cachedSession == null)
+                return false;
+            _sessionRescanWatch.Restart();
+            if (!TryAcquireCachedSession(targetPid))
+                return false;
+        }
+
+        var ses = _cachedSession;
+        if (ses?.Meter == null || ses.Volume == null) return false;
+
+        try
+        {
+            if (ses.Meter.GetPeakValue(out float rawPeak) != 0)
+            {
+                ReleaseCachedSession();
+                return false;
+            }
+
+            float targetGain = ComputeEnvelopeGain(rawPeak, prof, ref currentGain, out inputDb, out outputDb, out gainReductionDb, out activeLiftDb);
+            float userBase = (!string.IsNullOrEmpty(ses.InstanceId) && _savedSessionVolumes.TryGetValue(ses.InstanceId, out float b)) ? b : 1.0f;
+            float finalVol = Math.Clamp(userBase * targetGain, 0.02f, 1.0f);
+
+            // Only issue Audiosrv RPC when volume changes meaningfully (>= 1%)
+            if (MathF.Abs(finalVol - ses.LastAppliedVol) >= 0.01f)
+            {
+                if (ses.Volume.SetMasterVolume(finalVol, ref _audioCtxGuid) != 0)
+                {
+                    ReleaseCachedSession();
+                    return false;
+                }
+                ses.LastAppliedVol = finalVol;
+            }
+            return true;
+        }
+        catch
+        {
+            ReleaseCachedSession();
+            return false;
+        }
     }
 
     private static float ComputeEnvelopeGain(
@@ -590,7 +665,7 @@ internal static class ProcessAudioEngine
         float desiredGain = Math.Clamp(MathF.Pow(10f, desiredDbChange / 20f), 0.02f, 1.0f);
 
         // 2ms ultra-fast attack for hearing protection; configurable smooth release for footstep recovery
-        const float dtMs = 4.0f;
+        const float dtMs = 12.0f;
         float coeff = desiredGain < smoothedGain
             ? 1f - MathF.Exp(-dtMs / 2.0f)
             : 1f - MathF.Exp(-dtMs / Math.Clamp(prof.releaseMs, 20f, 400f));

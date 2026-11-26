@@ -1008,13 +1008,23 @@ internal static class Program
 
                 lock (_overlayLock)
                 {
+                    var prevInp = _liveInput;
                     _liveInput = new InputSnapshot
                     {
                         Lmb = lmb, Rmb = rmb, Mmb = mmb, X1 = x1, X2 = x2,
                         Moving = moving, Sprint = sprint, Crouch = crouch, Jump = jump, AdsCustom = adsCustom,
                         CtrlFire = ctrlFire, CtrlAds = ctrlAds, CtrlMoving = ctrlMoving
                     };
-                    _overlayDirty = true;
+
+                    var animCfg = _activeConfig.animation;
+                    bool fireChanged = (lmb != prevInp.Lmb || ctrlFire != prevInp.CtrlFire) && animCfg.firingEnabled && animCfg.firingType != "none";
+                    bool moveChanged = (moving != prevInp.Moving || sprint != prevInp.Sprint || crouch != prevInp.Crouch || jump != prevInp.Jump || ctrlMoving != prevInp.CtrlMoving) && animCfg.movementBloomEnabled;
+                    bool adsChanged = (rmb != prevInp.Rmb || mmb != prevInp.Mmb || x1 != prevInp.X1 || x2 != prevInp.X2 || adsCustom != prevInp.AdsCustom || ctrlAds != prevInp.CtrlAds) && animCfg.adsAction != "none";
+
+                    if (fireChanged || moveChanged || adsChanged)
+                    {
+                        _overlayDirty = true;
+                    }
                 }
 
                 if (_studioConnected)
@@ -1284,7 +1294,8 @@ internal static class Program
         var inputThread = new Thread(RunInputLoop) { IsBackground = true };
         inputThread.Start();
 
-        var renderTimer = new System.Windows.Forms.Timer { Interval = 8 };
+        var renderTimer = new System.Windows.Forms.Timer { Interval = 16 };
+        var swLastOverlayPush = Stopwatch.StartNew();
         bool wasAnimating = false;
         bool lastVisible = false;
         bool didInitialTrim = false;
@@ -1350,7 +1361,12 @@ internal static class Program
             float dpiScale = (float)(mon?.ScaleFactor ?? 1.0);
             if (placeDirty && mon != null)
             {
-                int winPx = Math.Clamp((int)Math.Round(360 * dpiScale), 200, 640);
+                // Tight surface sizing minimizes DWM texture upload overhead while preserving room for rings/bloom
+                float neededRadius = 48f;
+                if (cfg.ring.enabled) neededRadius = Math.Max(neededRadius, cfg.ring.radius + cfg.animation.bloomAmount + 24f);
+                if (cfg.outerLines.enabled) neededRadius = Math.Max(neededRadius, cfg.outerLines.gap + cfg.outerLines.length + cfg.animation.bloomAmount * cfg.outerLines.bloomMultiplier + 24f);
+                if (cfg.image.enabled) neededRadius = Math.Max(neededRadius, 40f * cfg.image.scale + 20f);
+                int winPx = Math.Clamp((int)Math.Round(neededRadius * 2f * Math.Max(1f, cfg.position.scale) * dpiScale), 128, 360);
                 int cx = (int)Math.Round(mon.X + mon.Width / 2.0 + cfg.position.offsetX * dpiScale);
                 int cy = (int)Math.Round(mon.Y + mon.Height / 2.0 + cfg.position.offsetY * dpiScale);
                 _overlayForm.SetOverlayPlacement(cx - winPx / 2, cy - winPx / 2, winPx);
@@ -1376,13 +1392,20 @@ internal static class Program
                 return;
             }
 
+            // Cap DWM UpdateLayeredWindow pushes during continuous animation to ~30fps so game FPS stays locked
+            if (!dirty && swLastOverlayPush.ElapsedMilliseconds < 32)
+            {
+                return;
+            }
+            swLastOverlayPush.Restart();
+
             float dt = (float)swFrame.Elapsed.TotalSeconds;
             swFrame.Restart();
 
             var frame = anim.Step(cfg, _strictStaticMode ? default : inp, dt);
             wasAnimating = frame.IsAnimating;
             var drawCfg = (frame.UseSecondaryProfile && secCfg != null) ? secCfg : cfg;
-            _overlayForm.RenderFrame(drawCfg, frame, dpiScale);
+            _overlayForm.RenderFrame(drawCfg, frame, dpiScale, forceRedraw: dirty || placeDirty);
         };
 
         renderTimer.Start();

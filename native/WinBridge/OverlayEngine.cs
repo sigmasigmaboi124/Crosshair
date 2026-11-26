@@ -336,11 +336,17 @@ public sealed class NativeAnimController
             }
         }
 
+        bool activeFireMotion = a.firingEnabled && a.firingType != "none" &&
+                                (_bloom > 0.002f && (!fireDown || _bloom < 0.998f) ||
+                                 _recoilY > 0.002f && (!fireDown || _recoilY < 0.998f) ||
+                                 _pulseScale > 0.002f ||
+                                 (_fireFlash > 0.002f && !fireDown) ||
+                                 _hitmarker > 0.002f ||
+                                 (fireDown && a.firingType == "spin"));
+
         bool activeMotion = hasIdle ||
-                            _bloom > 0.002f || _recoilY > 0.002f || _pulseScale > 0.002f ||
-                            _fireFlash > 0.002f || _hitmarker > 0.002f ||
-                            (_adsBlend > 0.002f && _adsBlend < 0.998f) ||
-                            fireDown;
+                            activeFireMotion ||
+                            (_adsBlend > 0.002f && _adsBlend < 0.998f);
 
         return new AnimFrame
         {
@@ -410,14 +416,38 @@ public sealed class NativeOverlayForm : Form
     [DllImport("gdi32.dll")]
     private static extern bool DeleteObject(IntPtr hObject);
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct BITMAPINFOHEADER
+    {
+        public uint biSize;
+        public int biWidth;
+        public int biHeight;
+        public ushort biPlanes;
+        public ushort biBitCount;
+        public uint biCompression;
+        public uint biSizeImage;
+        public int biXPelsPerMeter;
+        public int biYPelsPerMeter;
+        public uint biClrUsed;
+        public uint biClrImportant;
+    }
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateDIBSection(IntPtr hdc, ref BITMAPINFOHEADER pbmi, uint usage, out IntPtr ppvBits, IntPtr hSection, uint offset);
+
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     private Bitmap? _surface;
+    private IntPtr _dibMemDc = IntPtr.Zero;
+    private IntPtr _dibHBitmap = IntPtr.Zero;
+    private IntPtr _dibOldBitmap = IntPtr.Zero;
+    private IntPtr _dibBits = IntPtr.Zero;
     private string? _cachedImgUrl;
     private Image? _cachedImg;
-    private int _winX, _winY, _winSize = 360;
+    private int _winX, _winY, _winSize = 180;
     private bool _overlayVisible;
+    private string _lastFrameKey = "";
 
     public NativeOverlayForm()
     {
@@ -425,7 +455,7 @@ public sealed class NativeOverlayForm : Form
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
-        Size = new Size(360, 360);
+        Size = new Size(180, 180);
         TopMost = true;
     }
 
@@ -441,16 +471,75 @@ public sealed class NativeOverlayForm : Form
         }
     }
 
+    private void ReleasePersistentDib()
+    {
+        _surface?.Dispose();
+        _surface = null;
+        if (_dibMemDc != IntPtr.Zero)
+        {
+            if (_dibOldBitmap != IntPtr.Zero) SelectObject(_dibMemDc, _dibOldBitmap);
+            DeleteDC(_dibMemDc);
+            _dibMemDc = IntPtr.Zero;
+        }
+        if (_dibHBitmap != IntPtr.Zero)
+        {
+            DeleteObject(_dibHBitmap);
+            _dibHBitmap = IntPtr.Zero;
+        }
+        _dibOldBitmap = IntPtr.Zero;
+        _dibBits = IntPtr.Zero;
+    }
+
+    private void EnsurePersistentDib(int sizePx)
+    {
+        if (_surface != null && _dibMemDc != IntPtr.Zero && _winSize == sizePx) return;
+        ReleasePersistentDib();
+        _winSize = sizePx;
+
+        IntPtr screenDc = GetDC(IntPtr.Zero);
+        try
+        {
+            _dibMemDc = CreateCompatibleDC(screenDc);
+            var bih = new BITMAPINFOHEADER
+            {
+                biSize = (uint)Marshal.SizeOf<BITMAPINFOHEADER>(),
+                biWidth = _winSize,
+                biHeight = -_winSize, // Top-down DIB so GDI+ Bitmap wraps scan0 directly with 0 allocations
+                biPlanes = 1,
+                biBitCount = 32,
+                biCompression = 0
+            };
+            _dibHBitmap = CreateDIBSection(_dibMemDc, ref bih, 0, out _dibBits, IntPtr.Zero, 0);
+            if (_dibHBitmap != IntPtr.Zero && _dibBits != IntPtr.Zero)
+            {
+                _dibOldBitmap = SelectObject(_dibMemDc, _dibHBitmap);
+                _surface = new Bitmap(_winSize, _winSize, _winSize * 4, PixelFormat.Format32bppPArgb, _dibBits);
+            }
+            else
+            {
+                _surface = new Bitmap(_winSize, _winSize, PixelFormat.Format32bppPArgb);
+            }
+        }
+        finally
+        {
+            ReleaseDC(IntPtr.Zero, screenDc);
+        }
+    }
+
     public void SetOverlayPlacement(int x, int y, int sizePx)
     {
+        bool posChanged = _winX != x || _winY != y;
         _winX = x;
         _winY = y;
-        int clamped = Math.Clamp(sizePx, 180, 640);
+        int clamped = Math.Clamp(sizePx, 128, 480);
         if (_winSize != clamped || _surface == null)
         {
-            _winSize = clamped;
-            _surface?.Dispose();
-            _surface = new Bitmap(_winSize, _winSize, PixelFormat.Format32bppPArgb);
+            EnsurePersistentDib(clamped);
+            _lastFrameKey = "";
+        }
+        else if (posChanged)
+        {
+            _lastFrameKey = "";
         }
     }
 
@@ -460,6 +549,7 @@ public sealed class NativeOverlayForm : Form
         if (!IsHandleCreated) CreateHandle();
         if (visible)
         {
+            _lastFrameKey = "";
             if (!Visible) SetWindowPos(Handle, HWND_TOPMOST, _winX, _winY, _winSize, _winSize, SWP_NOACTIVATE | SWP_SHOWWINDOW);
         }
         else
@@ -498,11 +588,19 @@ public sealed class NativeOverlayForm : Form
         return _cachedImg;
     }
 
-    public void RenderFrame(CrosshairConfigDto cfg, in AnimFrame frame, float dpiScale)
+    public void RenderFrame(CrosshairConfigDto cfg, in AnimFrame frame, float dpiScale, bool forceRedraw = false)
     {
         if (!_overlayVisible) return;
         if (!IsHandleCreated) CreateHandle();
-        if (_surface == null) _surface = new Bitmap(_winSize, _winSize, PixelFormat.Format32bppPArgb);
+        EnsurePersistentDib(_winSize);
+        if (_surface == null) return;
+
+        // Quantized visual-diff check: skip UpdateLayeredWindow when the visible reticle has not changed
+        string frameKey = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{MathF.Round(frame.GapDelta * 4f)}|{MathF.Round(frame.ScaleMult * 50f)}|{MathF.Round(frame.OpacityMult * 50f)}|{MathF.Round(frame.RotationDeltaDeg * 2f)}|{MathF.Round(frame.RecoilOffsetY * 4f)}|{MathF.Round(frame.HitmarkerAlpha * 20f)}|{frame.ColorOverride}|{MathF.Round((frame.RainbowHue ?? -1f) * 0.5f)}|{MathF.Round(frame.RadarAngleDeg * 0.5f)}|{frame.UseSecondaryProfile}");
+
+        if (!forceRedraw && frameKey == _lastFrameKey) return;
+        _lastFrameKey = frameKey;
 
         using (var g = Graphics.FromImage(_surface))
         {
@@ -516,20 +614,16 @@ public sealed class NativeOverlayForm : Form
             }
         }
 
-        PushBitmapToLayeredWindow(_surface);
+        PushBitmapToLayeredWindow();
     }
 
-    private void PushBitmapToLayeredWindow(Bitmap bmp)
+    private void PushBitmapToLayeredWindow()
     {
+        if (_dibMemDc == IntPtr.Zero || _dibHBitmap == IntPtr.Zero) return;
         IntPtr screenDc = GetDC(IntPtr.Zero);
-        IntPtr memDc = CreateCompatibleDC(screenDc);
-        IntPtr hBitmap = IntPtr.Zero;
-        IntPtr oldBitmap = IntPtr.Zero;
         try
         {
-            hBitmap = bmp.GetHbitmap(Color.FromArgb(0));
-            oldBitmap = SelectObject(memDc, hBitmap);
-            var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
+            var size = new SIZE { cx = _winSize, cy = _winSize };
             var srcPt = new POINT { x = 0, y = 0 };
             var dstPt = new POINT { x = _winX, y = _winY };
             var blend = new BLENDFUNCTION
@@ -539,13 +633,10 @@ public sealed class NativeOverlayForm : Form
                 SourceConstantAlpha = 255,
                 AlphaFormat = AC_SRC_ALPHA
             };
-            UpdateLayeredWindow(Handle, screenDc, ref dstPt, ref size, memDc, ref srcPt, 0, ref blend, ULW_ALPHA);
+            UpdateLayeredWindow(Handle, screenDc, ref dstPt, ref size, _dibMemDc, ref srcPt, 0, ref blend, ULW_ALPHA);
         }
         finally
         {
-            if (oldBitmap != IntPtr.Zero) SelectObject(memDc, oldBitmap);
-            if (hBitmap != IntPtr.Zero) DeleteObject(hBitmap);
-            DeleteDC(memDc);
             ReleaseDC(IntPtr.Zero, screenDc);
         }
     }
@@ -896,8 +987,9 @@ public sealed class NativeOverlayForm : Form
     {
         if (disposing)
         {
-            _surface?.Dispose();
+            ReleasePersistentDib();
             _cachedImg?.Dispose();
+            _cachedImg = null;
         }
         base.Dispose(disposing);
     }
